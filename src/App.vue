@@ -1,16 +1,37 @@
 <script setup lang="ts">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
+import { invoke } from '@tauri-apps/api'
+import { ref } from 'vue'
+
+const apiUrl = ref("");
+
+const send_get_request = () => {
+  invoke('send_get_request', { apiUrl: apiUrl.value })
+    .then((response) => {
+      console.log(response)
+    });
+}
+
 </script>
 
 <template>
-  <div class="text-3xl font-bold underline">
-    <h1>Welcome to Tauri!</h1>
-
-  </div>
   <div class="container mx-auto">
-    <input class="px-3 py-2.5 min-w-100 bg-neutral-900 border rounded-[7px] border-gray-500" />
+    <input class="px-3 py-2.5 w-96 bg-neutral-900 border rounded-[7px] border-gray-500" v-model="apiUrl" />
+    <button class="btn btn-blue mx-10" @click="send_get_request()">
+      SEND
+    </button>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.btn {
+  @apply font-bold py-2 px-4 rounded;
+}
+
+.btn-blue {
+  @apply bg-blue-500 text-white;
+}
+
+.btn-blue:hover {
+  @apply bg-blue-700;
+}
+</style>
