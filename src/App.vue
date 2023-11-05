@@ -6,15 +6,11 @@
 <template>
   <div class="text-3xl font-bold underline">
     <h1>Welcome to Tauri!</h1>
+
+  </div>
+  <div class="container mx-auto">
+    <input class="px-3 py-2.5 min-w-100 bg-neutral-900 border rounded-[7px] border-gray-500" />
   </div>
 </template>
 
-<style scoped>
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
-}
-
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #249b73);
-}
-</style>
+<style scoped></style>
