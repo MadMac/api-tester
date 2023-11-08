@@ -7,7 +7,14 @@ use log::{debug, info};
 #[tauri::command]
 async fn send_get_request(api_url: String) -> String {
     info!("Run GET request {:?}", api_url);
-    let body = reqwest::get(api_url).await.unwrap();
+    let client = reqwest::Client::new();
+    let body = client
+        .get(api_url)
+        .header(reqwest::header::USER_AGENT, "TestApi/1.0")
+        .send()
+        .await
+        .unwrap();
+
     debug!("GET response: {:?}", body);
     return body.text().await.unwrap();
 }
