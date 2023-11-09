@@ -18,38 +18,65 @@ const send_get_request = () => {
 </script>
 
 <template>
-  <div class="mx-10 py-10 flex flex-col h-full">
-    <div class="flex flex-row">
-      <select class="px-3 py-2.5 mx-10 basis-1/12 bg-neutral-900 border rounded-[7px] border-gray-500  text-white"
-        v-model="requestType">
-        <option selected>GET</option>
-        <option>POST</option>
-        <option>PUT</option>
-      </select>
-      <input class="px-3 py-2.5 grow bg-neutral-900 border rounded-[7px] border-gray-500" v-model="apiUrl" />
-      <button class="btn btn-blue mx-10 basis-1/12" @click="send_get_request()">
+  <div class="flex-container">
+    <div class="flex-row">
+      <v-select label="Select" :items="['GET', 'POST', 'PUT']" class="select-col" v-model="requestType"></v-select>
+      <v-text-field label="Input" class="input-col" v-model="apiUrl"></v-text-field>
+      <v-btn block class="button-col" size="x-large" color="#9ed2ae" @click="send_get_request()">
         SEND
-      </button>
+      </v-btn>
     </div>
-    <div class="mt-10 grow mx-10 mt-10">
-      <div
-        class="h-full w-full grow border font-mono text-sm p-4 border-gray-500 bg-neutral-900 text-white whitespace-pre">
-        {{ requestStore.requestResponse && JSON.stringify(JSON.parse(requestStore.requestResponse), null, 2) }}
-      </div>
+    <div class="result-container">
+      <v-card class="result-card" subtitle="Subtitle">
+        <v-card-text>
+          {{ requestStore.requestResponse &&
+            JSON.stringify(JSON.parse(requestStore.requestResponse), null, 2) }}
+        </v-card-text>
+
+      </v-card>
     </div>
   </div>
 </template>
 
 <style scoped>
-.btn {
-  @apply font-bold py-2 px-4 rounded;
+.flex-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
-.btn-blue {
-  @apply bg-blue-500 text-white;
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  margin: 10px;
+  flex-grow: 0;
 }
 
-.btn-blue:hover {
-  @apply bg-blue-700;
+.button-col,
+.select-col {
+  flex-grow: 0;
+  flex-basis: 8%;
+  margin-left: 10px;
+  margin-right: 10px;
+  min-width: 100px;
+}
+
+.input-col {
+  flex-grow: 1;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.result-container {
+  margin: 10px;
+  flex-grow: 1;
+}
+
+.result-card {
+  flex-grow: 1;
+  height: 100%;
+  margin-left: 10px;
+  margin-right: 10px;
+  white-space: pre;
 }
 </style>
