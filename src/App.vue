@@ -8,11 +8,34 @@ const requestType = ref("GET");
 
 const send_get_request = () => {
   console.log(requestType)
-  invoke('send_get_request', { apiUrl: apiUrl.value })
-    .then((response) => {
-      requestStore.updateRequestResponse(response as string);
-      console.log(response)
-    });
+  requestStore.updateRequestResponse("" as string)
+  switch (requestType.value) {
+    case "GET":
+      invoke('send_get_request', { apiUrl: apiUrl.value })
+        .then((response) => {
+          requestStore.updateRequestResponse(response as string);
+          console.log(response)
+        });
+      break;
+    case "POST":
+      invoke('send_post_request', { apiUrl: apiUrl.value })
+        .then((response) => {
+          requestStore.updateRequestResponse(response as string);
+          console.log(response)
+        });
+      break;
+    case "PUT":
+      invoke('send_put_request', { apiUrl: apiUrl.value })
+        .then((response) => {
+          requestStore.updateRequestResponse(response as string);
+          console.log(response)
+        });
+      break;
+    // DELETE
+    default:
+      console.error("Invalid requestType: " + requestType.value);
+  }
+
 }
 
 </script>
@@ -58,7 +81,7 @@ const send_get_request = () => {
   flex-basis: 8%;
   margin-left: 10px;
   margin-right: 10px;
-  min-width: 100px;
+  min-width: 110px;
 }
 
 .input-col {
@@ -78,5 +101,6 @@ const send_get_request = () => {
   margin-left: 10px;
   margin-right: 10px;
   white-space: pre;
+  font-family: monospace;
 }
 </style>
