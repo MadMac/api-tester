@@ -1,21 +1,89 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::fmt::Debug;
+
 use log::{debug, info};
+use reqwest::{header::HeaderMap, StatusCode};
+use serde::{ser::SerializeMap, Serialize};
+
+#[derive(Debug, Clone, Serialize)]
+struct RequestResponse {
+    body: String,
+    headers: CustomHeaderMap,
+    status: CustomStatusCode,
+}
+
+struct CustomStatusCode(StatusCode);
+struct CustomHeaderMap(HeaderMap);
+
+impl Debug for CustomStatusCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0.as_str())
+    }
+}
+
+impl Clone for CustomStatusCode {
+    fn clone(&self) -> Self {
+        CustomStatusCode(self.0.clone())
+    }
+}
+
+impl Serialize for CustomStatusCode {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_u16(self.0.as_u16())
+    }
+}
+
+impl Debug for CustomHeaderMap {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl Clone for CustomHeaderMap {
+    fn clone(&self) -> Self {
+        CustomHeaderMap(self.0.clone())
+    }
+}
+
+impl Serialize for CustomHeaderMap {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut map = serializer.serialize_map(Some(self.0.len()))?;
+        for (k, v) in self.0.clone() {
+            map.serialize_entry(&k.unwrap().as_str(), v.to_str().unwrap())?;
+        }
+        map.end()
+    }
+}
 
 #[tauri::command]
-async fn send_get_request(api_url: String) -> String {
+async fn send_get_request(api_url: String) -> RequestResponse {
     info!("Run GET request {:?}", api_url);
     let client = reqwest::Client::new();
-    let body = client
+    let request = client
         .get(api_url)
         .header(reqwest::header::USER_AGENT, "TestApi/1.0")
         .send()
         .await
         .unwrap();
 
-    debug!("GET response: {:?}", body);
-    return body.text().await.unwrap();
+    debug!("GET response: {:?}", request);
+    let headers = CustomHeaderMap(request.headers().clone());
+    let status = CustomStatusCode(request.status().clone());
+    let body = request.text().await.unwrap();
+
+    RequestResponse {
+        body,
+        headers,
+        status,
+    }
 }
 
 #[tauri::command]
@@ -30,7 +98,7 @@ async fn send_post_request(api_url: String) -> String {
         .unwrap();
 
     debug!("POST response: {:?}", body);
-    return body.text().await.unwrap();
+    return body.json().await.unwrap();
 }
 
 #[tauri::command]
@@ -45,7 +113,7 @@ async fn send_put_request(api_url: String) -> String {
         .unwrap();
 
     debug!("PUT response: {:?}", body);
-    return body.text().await.unwrap();
+    return body.json().await.unwrap();
 }
 
 fn main() {

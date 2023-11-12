@@ -2,6 +2,7 @@
 import { invoke } from '@tauri-apps/api'
 import { requestStore } from './store/requestStore.js'
 import { ref } from 'vue'
+import { RequestResponse } from './models/models'
 
 const apiUrl = ref("");
 const requestType = ref("GET");
@@ -13,8 +14,10 @@ const send_get_request = () => {
     case "GET":
       invoke('send_get_request', { apiUrl: apiUrl.value })
         .then((response) => {
-          requestStore.updateRequestResponse(response as string);
-          console.log(response)
+          let requestResponse = response as RequestResponse;
+          requestStore.updateRequestResponse(requestResponse.body);
+          requestStore.updateStatus(requestResponse.status);
+          console.log(requestResponse)
         });
       break;
     case "POST":
@@ -50,7 +53,10 @@ const send_get_request = () => {
       </v-btn>
     </div>
     <div class="result-container">
-      <v-card class="result-card" subtitle="Subtitle">
+      <v-card class="result-card">
+        <v-card-subtitle>
+          {{ requestStore.requestStatus != "" ? "Status: " + requestStore.requestStatus : "" }}
+        </v-card-subtitle>
         <v-card-text>
           {{ requestStore.requestResponse &&
             JSON.stringify(JSON.parse(requestStore.requestResponse), null, 2) }}
@@ -102,5 +108,10 @@ const send_get_request = () => {
   margin-right: 10px;
   white-space: pre;
   font-family: monospace;
+}
+
+.v-card-subtitle {
+  text-align: right;
+  margin: 10px;
 }
 </style>
