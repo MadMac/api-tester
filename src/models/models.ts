@@ -3,3 +3,9 @@ export interface RequestResponse {
 	headers: string;
 	status: string;
 }
+
+export interface RequestTab {
+	url: string;
+	status: string;
+	response: string;
+}
