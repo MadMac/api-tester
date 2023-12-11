@@ -3,12 +3,15 @@ import { invoke } from '@tauri-apps/api'
 import { requestStore } from './store/requestStore.js'
 import { ref } from 'vue'
 import { RequestResponse } from './models/models'
+import { v4 as uuidv4 } from 'uuid';
 
 const apiUrl = ref("");
 const requestType = ref("GET");
+const activeTab = ref("");
 
 if (requestStore.tabs.length === 0) {
   const newTab = {
+    uuid: uuidv4(),
     url: "",
     status: "",
     response: ""
@@ -18,6 +21,7 @@ if (requestStore.tabs.length === 0) {
 
 const add_new_tab = () => {
   const newTab = {
+    uuid: uuidv4(),
     url: "",
     status: "",
     response: ""
@@ -66,7 +70,7 @@ const send_get_request = () => {
   <div class="container">
     <v-card class="card-container" color="blue-grey" variant="tonal">
       <div class="flex-container flex-row">
-        <v-tabs bg-color="blue-grey-darken-4" show-arrows="true" class="tab-container">
+        <v-tabs bg-color="blue-grey-darken-4" v-model="activeTab" class="tab-container">
           <v-tab v-for="n in requestStore.tabs" :value="n">
             Item
           </v-tab>

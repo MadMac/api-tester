@@ -5,6 +5,7 @@ export interface RequestResponse {
 }
 
 export interface RequestTab {
+	uuid: string;
 	url: string;
 	status: string;
 	response: string;
