@@ -6,12 +6,14 @@ import { RequestResponse } from './models/models'
 import { v4 as uuidv4 } from 'uuid';
 
 const apiUrl = ref("");
+const tabName = ref("")
 const requestType = ref("GET");
-const activeTab = ref("");
+const activeTab = ref();
 
 if (requestStore.tabs.length === 0) {
   const newTab = {
     uuid: uuidv4(),
+    name: "",
     url: "",
     status: "",
     response: ""
@@ -22,6 +24,7 @@ if (requestStore.tabs.length === 0) {
 const add_new_tab = () => {
   const newTab = {
     uuid: uuidv4(),
+    name: "",
     url: "",
     status: "",
     response: ""
@@ -81,6 +84,9 @@ const send_get_request = () => {
         </v-btn>
       </div>
       <div class="flex-container">
+        <div class="flex-row">
+          <v-text-field label="Name" class="input-col" v-model="tabName" hide-details="auto"></v-text-field>
+        </div>
         <div class="flex-row">
           <v-select label="Select" :items="['GET', 'POST', 'PUT']" class="select-col" v-model="requestType"></v-select>
           <v-text-field label="Input" class="input-col" v-model="apiUrl"></v-text-field>
