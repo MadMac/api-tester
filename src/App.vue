@@ -94,6 +94,29 @@ const send_get_request = () => {
             SEND
           </v-btn>
         </div>
+        <div class="flex-row-grow">
+          <v-table density="compact">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Key</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td width="60"><v-checkbox density="compact" hide-details="true"></v-checkbox></td>
+                <td>test</td>
+                <td>test</td>
+              </tr>
+              <tr>
+                <td width="60"><v-checkbox density="compact" hide-details="true"></v-checkbox></td>
+                <td>test</td>
+                <td>test</td>
+              </tr>
+            </tbody>
+          </v-table>
+        </div>
         <div class="result-container">
           <v-card class="result-card">
             <v-card-subtitle>
@@ -143,6 +166,11 @@ const send_get_request = () => {
   flex-direction: row;
   margin: 10px;
   flex-grow: 0;
+}
+
+.flex-row-grow {
+  flex-grow: 1;
+  margin: 20px;
 }
 
 .button-col,
