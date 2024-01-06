@@ -13,7 +13,7 @@ const activeTab = ref();
 if (requestStore.tabs.length === 0) {
   const newTab = {
     uuid: uuidv4(),
-    name: "",
+    name: "Untitled",
     url: "",
     status: "",
     response: ""
@@ -21,10 +21,25 @@ if (requestStore.tabs.length === 0) {
   requestStore.addNewTab(newTab);
 }
 
+const update_tab_name = () => {
+  activeTab.value.name = tabName.value
+}
+
+const update_api_url = () => {
+  activeTab.value.url = apiUrl.value
+}
+
+
+const tab_changed = () => {
+  console.log("tab clicked")
+  tabName.value = activeTab.value.name
+  apiUrl.value = activeTab.value.url
+}
+
 const add_new_tab = () => {
   const newTab = {
     uuid: uuidv4(),
-    name: "",
+    name: "Untitled",
     url: "",
     status: "",
     response: ""
@@ -66,18 +81,16 @@ const send_get_request = () => {
   }
 
 }
-
 </script>
 
 <template>
   <div class="container">
     <v-card class="card-container" color="blue-grey" variant="tonal">
       <div class="flex-container flex-row">
-        <v-tabs bg-color="blue-grey-darken-4" v-model="activeTab" class="tab-container">
+        <v-tabs bg-color="blue-grey-darken-4" @click="tab_changed()" v-model="activeTab" class="tab-container">
           <v-tab v-for="n in requestStore.tabs" :value="n">
-            Item
+            {{ n ? n.name.substring(0, 10) : "Error"}}{{ n && n.name.length > 10 ? "..." : ""}}
           </v-tab>
-
         </v-tabs>
         <v-btn icon class="new-tab-button" color="blue-grey-darken-1" height="35" width="35" @click="add_new_tab()">
           <v-icon>mdi-plus-circle-outline</v-icon>
@@ -85,11 +98,11 @@ const send_get_request = () => {
       </div>
       <div class="flex-container">
         <div class="flex-row">
-          <v-text-field label="Name" class="input-col" v-model="tabName" hide-details="auto"></v-text-field>
+          <v-text-field label="Name" class="input-col" @input="update_tab_name()" v-model="tabName" hide-details="auto"></v-text-field>
         </div>
         <div class="flex-row">
           <v-select label="Select" :items="['GET', 'POST', 'PUT']" class="select-col" v-model="requestType"></v-select>
-          <v-text-field label="Input" class="input-col" v-model="apiUrl"></v-text-field>
+          <v-text-field label="Input" class="input-col" @input="update_api_url()"  v-model="apiUrl"></v-text-field>
           <v-btn block class="button-col" size="x-large" color="blue-grey-lighten-1" @click="send_get_request()">
             SEND
           </v-btn>
