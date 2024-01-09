@@ -47,10 +47,11 @@ const add_new_tab = () => {
   requestStore.addNewTab(newTab);
 }
 
-const send_get_request = () => {
+const send_request = () => {
   if (!apiUrl.value) return;
   console.log(requestType)
   requestStore.updateRequestResponse("" as string)
+  console.log("type", requestType.value)
   switch (requestType.value) {
     case "GET":
       invoke('send_get_request', { apiUrl: apiUrl.value })
@@ -64,14 +65,27 @@ const send_get_request = () => {
     case "POST":
       invoke('send_post_request', { apiUrl: apiUrl.value })
         .then((response) => {
-          requestStore.updateRequestResponse(response as string);
+          let requestResponse = response as RequestResponse;
+          requestStore.updateRequestResponse(requestResponse.body);
+          requestStore.updateStatus(requestResponse.status);
           console.log(response)
         });
       break;
     case "PUT":
       invoke('send_put_request', { apiUrl: apiUrl.value })
         .then((response) => {
-          requestStore.updateRequestResponse(response as string);
+          let requestResponse = response as RequestResponse;
+          requestStore.updateRequestResponse(requestResponse.body);
+          requestStore.updateStatus(requestResponse.status);
+          console.log(response)
+        });
+      break;
+    case "DELETE":
+      invoke('send_delete_request', { apiUrl: apiUrl.value })
+        .then((response) => {
+          let requestResponse = response as RequestResponse;
+          requestStore.updateRequestResponse(requestResponse.body);
+          requestStore.updateStatus(requestResponse.status);
           console.log(response)
         });
       break;
@@ -101,9 +115,9 @@ const send_get_request = () => {
           <v-text-field label="Name" class="input-col" @input="update_tab_name()" v-model="tabName" hide-details="auto"></v-text-field>
         </div>
         <div class="flex-row">
-          <v-select label="Select" :items="['GET', 'POST', 'PUT']" class="select-col" v-model="requestType"></v-select>
+          <v-select label="Select" :items="['GET', 'POST', 'PUT', 'DELETE']" class="select-col" v-model="requestType"></v-select>
           <v-text-field label="Input" class="input-col" @input="update_api_url()"  v-model="apiUrl"></v-text-field>
-          <v-btn block class="button-col" size="x-large" color="blue-grey-lighten-1" @click="send_get_request()">
+          <v-btn block class="button-col" size="x-large" color="blue-grey-lighten-1" @click="send_request()">
             SEND
           </v-btn>
         </div>
