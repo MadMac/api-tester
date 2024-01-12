@@ -13,5 +13,11 @@ export const requestStore = reactive({
   tabs: [] as RequestTab[],
   addNewTab(tab: RequestTab) {
     this.tabs.push(tab);
+  },
+  removeTab(tab: RequestTab) {
+    const index = this.tabs.indexOf(tab);
+    if (index !== -1) {
+      this.tabs.splice(index, 1);
+    }
   }
 })

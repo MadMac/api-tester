@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { invoke } from '@tauri-apps/api'
 import { requestStore } from './store/requestStore.js'
-import { ref } from 'vue'
-import { RequestResponse } from './models/models'
+import { ref, onMounted } from 'vue'
+import { RequestResponse, RequestTab } from './models/models'
 import { v4 as uuidv4 } from 'uuid';
 
 const apiUrl = ref("");
@@ -20,6 +20,10 @@ if (requestStore.tabs.length === 0) {
   }
   requestStore.addNewTab(newTab);
 }
+
+onMounted(() => {
+  tab_changed()
+})
 
 const update_tab_name = () => {
   activeTab.value.name = tabName.value
@@ -45,6 +49,18 @@ const add_new_tab = () => {
     response: ""
   }
   requestStore.addNewTab(newTab);
+}
+
+const remove_tab = (remove_tab: RequestTab) => {
+  const index = requestStore.tabs.indexOf(remove_tab);
+  requestStore.removeTab(remove_tab);
+  if (index === requestStore.tabs.length) {
+    // TODO: Fix deleting last tab
+    activeTab.value = requestStore.tabs[index - 1];
+  } else {
+    activeTab.value = requestStore.tabs[index];
+  }
+  tab_changed();
 }
 
 const send_request = () => {
@@ -103,7 +119,10 @@ const send_request = () => {
       <div class="flex-container flex-row">
         <v-tabs bg-color="blue-grey-darken-4" @click="tab_changed()" v-model="activeTab" class="tab-container">
           <v-tab v-for="n in requestStore.tabs" :value="n">
-            {{ n ? n.name.substring(0, 10) : "Error"}}{{ n && n.name.length > 10 ? "..." : ""}}
+            {{ n ? n.name.substring(0, 10) : "Error"}}{{ n && n.name.length > 10 ? "..." : ""}} 
+            <v-btn icon class="close-tab-button" color="blue-grey-darken-4" height="20" width="20" @click="remove_tab(n)">
+              <v-icon size="x-small">mdi-close-circle</v-icon>
+            </v-btn>  
           </v-tab>
         </v-tabs>
         <v-btn icon class="new-tab-button" color="blue-grey-darken-1" height="35" width="35" @click="add_new_tab()">
@@ -174,6 +193,19 @@ const send_request = () => {
   margin-right: 10px;
   max-width: 35px;
 }
+
+.close-tab-button {
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 10px;
+  margin-right: 0px;
+  opacity: 0;
+}
+
+.close-tab-button:hover {
+  opacity: 1;
+}
+
 
 .container {
   width: 100%;
