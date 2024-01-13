@@ -136,8 +136,8 @@ const send_request = () => {
           <v-text-field label="Name" class="input-col" @input="update_tab_name()" v-model="tabName" hide-details="auto"></v-text-field>
         </div>
         <div class="flex-row">
-          <v-select label="Select" :items="['GET', 'POST', 'PUT', 'DELETE']" class="select-col" v-model="requestType"></v-select>
-          <v-text-field label="Input" class="input-col" @input="update_api_url()"  v-model="apiUrl"></v-text-field>
+          <v-select label="Method" :items="['GET', 'POST', 'PUT', 'DELETE']" class="select-col" v-model="requestType"></v-select>
+          <v-text-field label="Url" class="input-col" @input="update_api_url()"  v-model="apiUrl"></v-text-field>
           <v-btn block class="button-col" size="x-large" color="blue-grey-lighten-1" @click="send_request()">
             SEND
           </v-btn>
@@ -240,7 +240,7 @@ const send_request = () => {
   flex-basis: 8%;
   margin-left: 10px;
   margin-right: 10px;
-  min-width: 110px;
+  min-width: 120px;
 }
 
 .input-col {
