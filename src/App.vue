@@ -67,16 +67,14 @@ const remove_tab = (remove_tab: RequestTab) => {
 
 const send_request = () => {
   if (!apiUrl.value) return;
-  console.log(requestType)
-  requestStore.updateRequestResponse("" as string)
-  console.log("type", requestType.value)
+  activeTab.value.response = "";
   switch (requestType.value) {
     case "GET":
       invoke('send_get_request', { apiUrl: apiUrl.value })
         .then((response) => {
           let requestResponse = response as RequestResponse;
-          requestStore.updateRequestResponse(requestResponse.body);
-          requestStore.updateStatus(requestResponse.status);
+          activeTab.value.response = requestResponse.body;
+          activeTab.value.status = requestResponse.status;
           console.log(requestResponse)
         });
       break;
@@ -84,8 +82,8 @@ const send_request = () => {
       invoke('send_post_request', { apiUrl: apiUrl.value })
         .then((response) => {
           let requestResponse = response as RequestResponse;
-          requestStore.updateRequestResponse(requestResponse.body);
-          requestStore.updateStatus(requestResponse.status);
+          activeTab.value.response = requestResponse.body;
+          activeTab.value.status = requestResponse.status;
           console.log(response)
         });
       break;
@@ -93,8 +91,8 @@ const send_request = () => {
       invoke('send_put_request', { apiUrl: apiUrl.value })
         .then((response) => {
           let requestResponse = response as RequestResponse;
-          requestStore.updateRequestResponse(requestResponse.body);
-          requestStore.updateStatus(requestResponse.status);
+          activeTab.value.response = requestResponse.body;
+          activeTab.value.status = requestResponse.status;
           console.log(response)
         });
       break;
@@ -102,8 +100,8 @@ const send_request = () => {
       invoke('send_delete_request', { apiUrl: apiUrl.value })
         .then((response) => {
           let requestResponse = response as RequestResponse;
-          requestStore.updateRequestResponse(requestResponse.body);
-          requestStore.updateStatus(requestResponse.status);
+          activeTab.value.response = requestResponse.body;
+          activeTab.value.status = requestResponse.status;
           console.log(response)
         });
       break;
@@ -117,17 +115,17 @@ const send_request = () => {
 
 <template>
   <div class="container">
-    <v-card class="card-container" color="blue-grey" variant="tonal">
+    <v-card class="card-container" color="light-blue" variant="tonal">
       <div class="flex-container flex-row">
-        <v-tabs bg-color="blue-grey-darken-4" @click="tab_changed()" v-model="activeTab" class="tab-container">
+        <v-tabs bg-color="light-blue-darken-4" @click="tab_changed()" v-model="activeTab" class="tab-container" show-arrows>
           <v-tab v-for="n in requestStore.tabs" :value="n">
             {{ n ? n.name.substring(0, 10) : "Error"}}{{ n && n.name.length > 10 ? "..." : ""}} 
-            <v-btn icon class="close-tab-button" color="blue-grey-darken-4" height="20" width="20" @click="remove_tab(n)">
+            <v-btn icon class="close-tab-button" color="light-blue-darken-4" height="20" width="20" @click="remove_tab(n)">
               <v-icon size="x-small">mdi-close-circle</v-icon>
             </v-btn>  
           </v-tab>
         </v-tabs>
-        <v-btn icon class="new-tab-button" color="blue-grey-darken-1" height="35" width="35" @click="add_new_tab()">
+        <v-btn icon class="new-tab-button" color="light-blue-darken-1" height="35" width="35" @click="add_new_tab()">
           <v-icon>mdi-plus-circle-outline</v-icon>
         </v-btn>
       </div>
@@ -138,7 +136,7 @@ const send_request = () => {
         <div class="flex-row">
           <v-select label="Method" :items="['GET', 'POST', 'PUT', 'DELETE']" class="select-col" v-model="requestType"></v-select>
           <v-text-field label="Url" class="input-col" @input="update_api_url()"  v-model="apiUrl"></v-text-field>
-          <v-btn block class="button-col" size="x-large" color="blue-grey-lighten-1" @click="send_request()">
+          <v-btn block class="button-col" size="x-large" color="light-blue-darken-1" @click="send_request()">
             SEND
           </v-btn>
         </div>
@@ -153,14 +151,46 @@ const send_request = () => {
             </thead>
             <tbody>
               <tr>
-                <td width="60"><v-checkbox density="compact" hide-details="true"></v-checkbox></td>
-                <td>test</td>
-                <td>test</td>
+                <td width="60"><v-checkbox density="compact" hide-details="auto"></v-checkbox></td>
+                <td>
+                  <v-text-field
+                    placeholder="Parameter"
+                    variant="plain"
+                    hide-details="auto"
+                    density="compact"
+                    class="parameter-field"
+                  ></v-text-field>
+                </td>
+                <td>
+                  <v-text-field
+                    placeholder="Value"
+                    variant="plain"
+                    hide-details="auto"
+                    density="compact"
+                    class="parameter-field"
+                  ></v-text-field>
+                </td>
               </tr>
               <tr>
-                <td width="60"><v-checkbox density="compact" hide-details="true"></v-checkbox></td>
-                <td>test</td>
-                <td>test</td>
+                <td width="60"><v-checkbox density="compact" hide-details="auto"></v-checkbox></td>
+                <td>
+                  <v-text-field
+                    placeholder="Parameter"
+                    variant="plain"
+                    hide-details="auto"
+                    density="compact"
+                    class="parameter-field"
+                  ></v-text-field>
+                </td>
+                <td>
+                  <v-text-field
+                    placeholder="Value"
+                    variant="plain"
+                    hide-details="auto"
+                    density="compact"
+                    class="parameter-field"
+                  ></v-text-field>
+                </td>
               </tr>
             </tbody>
           </v-table>
@@ -168,11 +198,11 @@ const send_request = () => {
         <div class="result-container">
           <v-card class="result-card">
             <v-card-subtitle>
-              {{ requestStore.requestStatus != "" ? "Status: " + requestStore.requestStatus : "" }}
+              {{ activeTab && activeTab.status && activeTab.status  != "" ? "Status: " + activeTab.status  : "" }}
             </v-card-subtitle>
             <v-card-text>
-              {{ requestStore.requestResponse &&
-                JSON.stringify(JSON.parse(requestStore.requestResponse), null, 2) }}
+              {{ activeTab && activeTab.response &&
+                JSON.stringify(JSON.parse(activeTab.response), null, 2) }}
             </v-card-text>
 
           </v-card>
@@ -267,4 +297,5 @@ const send_request = () => {
   text-align: right;
   margin: 10px;
 }
+
 </style>
