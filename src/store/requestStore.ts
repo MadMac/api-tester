@@ -19,5 +19,8 @@ export const requestStore = reactive({
     if (index !== -1) {
       this.tabs.splice(index, 1);
     }
+  },
+  isTabsEmpty() {
+    return this.tabs.length === 0
   }
 })

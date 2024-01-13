@@ -10,7 +10,7 @@ const tabName = ref("")
 const requestType = ref("GET");
 const activeTab = ref();
 
-if (requestStore.tabs.length === 0) {
+const init_tabs = () => {
   const newTab = {
     uuid: uuidv4(),
     name: "Untitled",
@@ -22,6 +22,9 @@ if (requestStore.tabs.length === 0) {
 }
 
 onMounted(() => {
+  if (requestStore.isTabsEmpty()) {
+    init_tabs();
+  }
   tab_changed()
 })
 
@@ -35,9 +38,15 @@ const update_api_url = () => {
 
 
 const tab_changed = () => {
-  console.log("tab clicked")
-  tabName.value = activeTab.value.name
-  apiUrl.value = activeTab.value.url
+  if (activeTab.value !== undefined) {
+    tabName.value = activeTab.value.name
+    apiUrl.value = activeTab.value.url
+  } else {
+    if (requestStore.isTabsEmpty()) {
+      init_tabs();
+    }
+    activeTab.value = requestStore.tabs[requestStore.tabs.length - 1]
+  }
 }
 
 const add_new_tab = () => {
@@ -52,14 +61,7 @@ const add_new_tab = () => {
 }
 
 const remove_tab = (remove_tab: RequestTab) => {
-  const index = requestStore.tabs.indexOf(remove_tab);
   requestStore.removeTab(remove_tab);
-  if (index === requestStore.tabs.length) {
-    // TODO: Fix deleting last tab
-    activeTab.value = requestStore.tabs[index - 1];
-  } else {
-    activeTab.value = requestStore.tabs[index];
-  }
   tab_changed();
 }
 
