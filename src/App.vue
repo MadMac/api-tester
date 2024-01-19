@@ -2,7 +2,7 @@
 import { invoke } from '@tauri-apps/api'
 import { requestStore } from './store/requestStore.js'
 import { ref, onMounted } from 'vue'
-import { RequestResponse, RequestTab } from './models/models'
+import { RequestResponse, RequestTab, RequestParameter } from './models/models'
 import { v4 as uuidv4 } from 'uuid';
 
 const apiUrl = ref("");
@@ -16,7 +16,8 @@ const init_tabs = () => {
     name: "Untitled",
     url: "",
     status: "",
-    response: ""
+    response: "",
+    parameters: []
   }
   requestStore.addNewTab(newTab);
 }
@@ -55,7 +56,8 @@ const add_new_tab = () => {
     name: "Untitled",
     url: "",
     status: "",
-    response: ""
+    response: "",
+    parameters: []
   }
   requestStore.addNewTab(newTab);
 }
@@ -63,6 +65,16 @@ const add_new_tab = () => {
 const remove_tab = (remove_tab: RequestTab) => {
   requestStore.removeTab(remove_tab);
   tab_changed();
+}
+
+const add_parameter = () => {
+  const new_parameter: RequestParameter = {
+    uuid: uuidv4(),
+    enabled: true,
+    key: "",
+    value: ""
+  }
+  activeTab.value.parameters.push(new_parameter);
 }
 
 const send_request = () => {
@@ -150,8 +162,8 @@ const send_request = () => {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td width="60"><v-checkbox density="compact" hide-details="auto"></v-checkbox></td>
+              <tr v-if="activeTab" v-for="n in activeTab.parameters" :value="n" :key="n.uuid">
+                <td width="60"><v-checkbox density="compact" hide-details="auto" v-model="n.enabled"></v-checkbox></td>
                 <td>
                   <v-text-field
                     placeholder="Parameter"
@@ -159,6 +171,7 @@ const send_request = () => {
                     hide-details="auto"
                     density="compact"
                     class="parameter-field"
+                    v-model="n.key"
                   ></v-text-field>
                 </td>
                 <td>
@@ -172,24 +185,10 @@ const send_request = () => {
                 </td>
               </tr>
               <tr>
-                <td width="60"><v-checkbox density="compact" hide-details="auto"></v-checkbox></td>
-                <td>
-                  <v-text-field
-                    placeholder="Parameter"
-                    variant="plain"
-                    hide-details="auto"
-                    density="compact"
-                    class="parameter-field"
-                  ></v-text-field>
-                </td>
-                <td>
-                  <v-text-field
-                    placeholder="Value"
-                    variant="plain"
-                    hide-details="auto"
-                    density="compact"
-                    class="parameter-field"
-                  ></v-text-field>
+                <td colspan="3" class="parameter-add-button">
+                  <v-btn variant="flat" @click="add_parameter()">
+                    <v-icon>mdi-plus-circle-outline</v-icon>
+                  </v-btn>
                 </td>
               </tr>
             </tbody>
@@ -296,6 +295,13 @@ const send_request = () => {
 .v-card-subtitle {
   text-align: right;
   margin: 10px;
+}
+
+.parameter-add-button {
+  width: 100%;
+  text-align: center;
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
 }
 
 </style>

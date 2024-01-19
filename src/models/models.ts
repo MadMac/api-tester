@@ -10,4 +10,12 @@ export interface RequestTab {
 	url: string;
 	status: string;
 	response: string;
+	parameters: RequestParameter[];
+}
+
+export interface RequestParameter {
+	uuid: string;
+	enabled: boolean;
+	key: string;
+	value: string;
 }
