@@ -16,7 +16,7 @@ const init_tabs = () => {
     name: "Untitled",
     url: "",
     status: "",
-    response: "",
+    response: undefined,
     parameters: []
   }
   requestStore.addNewTab(newTab);
@@ -56,7 +56,7 @@ const add_new_tab = () => {
     name: "Untitled",
     url: "",
     status: "",
-    response: "",
+    response: undefined,
     parameters: []
   }
   requestStore.addNewTab(newTab);
@@ -85,8 +85,7 @@ const send_request = () => {
       invoke('send_get_request', { apiUrl: apiUrl.value })
         .then((response) => {
           let requestResponse = response as RequestResponse;
-          activeTab.value.response = requestResponse.body;
-          activeTab.value.status = requestResponse.status;
+          activeTab.value.response = requestResponse
           console.log(requestResponse)
         });
       break;
@@ -94,8 +93,7 @@ const send_request = () => {
       invoke('send_post_request', { apiUrl: apiUrl.value })
         .then((response) => {
           let requestResponse = response as RequestResponse;
-          activeTab.value.response = requestResponse.body;
-          activeTab.value.status = requestResponse.status;
+          activeTab.value.response = requestResponse
           console.log(response)
         });
       break;
@@ -103,8 +101,7 @@ const send_request = () => {
       invoke('send_put_request', { apiUrl: apiUrl.value })
         .then((response) => {
           let requestResponse = response as RequestResponse;
-          activeTab.value.response = requestResponse.body;
-          activeTab.value.status = requestResponse.status;
+          activeTab.value.response = requestResponse
           console.log(response)
         });
       break;
@@ -112,12 +109,10 @@ const send_request = () => {
       invoke('send_delete_request', { apiUrl: apiUrl.value })
         .then((response) => {
           let requestResponse = response as RequestResponse;
-          activeTab.value.response = requestResponse.body;
-          activeTab.value.status = requestResponse.status;
+          activeTab.value.response = requestResponse
           console.log(response)
         });
       break;
-    // DELETE
     default:
       console.error("Invalid requestType: " + requestType.value);
   }
@@ -127,14 +122,19 @@ const send_request = () => {
 
 <template>
   <div class="container">
+    <v-card class="side-container" color="light-blue" variant="tonal">
+      <div class="flex-container flex-row">Test</div>
+    </v-card>
     <v-card class="card-container" color="light-blue" variant="tonal">
       <div class="flex-container flex-row">
-        <v-tabs bg-color="light-blue-darken-4" @click="tab_changed()" v-model="activeTab" class="tab-container" show-arrows>
+        <v-tabs bg-color="light-blue-darken-4" @click="tab_changed()" v-model="activeTab" class="tab-container"
+          show-arrows>
           <v-tab v-for="n in requestStore.tabs" :value="n">
-            {{ n ? n.name.substring(0, 10) : "Error"}}{{ n && n.name.length > 10 ? "..." : ""}} 
-            <v-btn icon class="close-tab-button" color="light-blue-darken-4" height="20" width="20" @click="remove_tab(n)">
+            {{ n ? n.name.substring(0, 10) : "Error" }}{{ n && n.name.length > 10 ? "..." : "" }}
+            <v-btn icon class="close-tab-button" color="light-blue-darken-4" height="20" width="20"
+              @click="remove_tab(n)">
               <v-icon size="x-small">mdi-close-circle</v-icon>
-            </v-btn>  
+            </v-btn>
           </v-tab>
         </v-tabs>
         <v-btn icon class="new-tab-button" color="light-blue-darken-1" height="35" width="35" @click="add_new_tab()">
@@ -143,11 +143,13 @@ const send_request = () => {
       </div>
       <div class="flex-container">
         <div class="flex-row">
-          <v-text-field label="Name" class="input-col" @input="update_tab_name()" v-model="tabName" hide-details="auto"></v-text-field>
+          <v-text-field label="Name" class="input-col" @input="update_tab_name()" v-model="tabName"
+            hide-details="auto"></v-text-field>
         </div>
         <div class="flex-row">
-          <v-select label="Method" :items="['GET', 'POST', 'PUT', 'DELETE']" class="select-col" v-model="requestType"></v-select>
-          <v-text-field label="Url" class="input-col" @input="update_api_url()"  v-model="apiUrl"></v-text-field>
+          <v-select label="Method" :items="['GET', 'POST', 'PUT', 'DELETE']" class="select-col"
+            v-model="requestType"></v-select>
+          <v-text-field label="Url" class="input-col" @input="update_api_url()" v-model="apiUrl"></v-text-field>
           <v-btn block class="button-col" size="x-large" color="light-blue-darken-1" @click="send_request()">
             SEND
           </v-btn>
@@ -165,23 +167,12 @@ const send_request = () => {
               <tr v-if="activeTab" v-for="n in activeTab.parameters" :value="n" :key="n.uuid">
                 <td width="60"><v-checkbox density="compact" hide-details="auto" v-model="n.enabled"></v-checkbox></td>
                 <td>
-                  <v-text-field
-                    placeholder="Parameter"
-                    variant="plain"
-                    hide-details="auto"
-                    density="compact"
-                    class="parameter-field"
-                    v-model="n.key"
-                  ></v-text-field>
+                  <v-text-field placeholder="Parameter" variant="plain" hide-details="auto" density="compact"
+                    class="parameter-field" v-model="n.key"></v-text-field>
                 </td>
                 <td>
-                  <v-text-field
-                    placeholder="Value"
-                    variant="plain"
-                    hide-details="auto"
-                    density="compact"
-                    class="parameter-field"
-                  ></v-text-field>
+                  <v-text-field placeholder="Value" variant="plain" hide-details="auto" density="compact"
+                    class="parameter-field"></v-text-field>
                 </td>
               </tr>
               <tr>
@@ -197,13 +188,13 @@ const send_request = () => {
         <div class="result-container">
           <v-card class="result-card">
             <v-card-subtitle>
-              {{ activeTab && activeTab.status && activeTab.status  != "" ? "Status: " + activeTab.status  : "" }}
+              {{ activeTab && activeTab.response && activeTab.response.status != "" ? "Status: " +
+                activeTab.response.status : "" }}
             </v-card-subtitle>
-            <v-card-text>
+            <v-card-text class="result-box" scrollable>
               {{ activeTab && activeTab.response &&
-                JSON.stringify(JSON.parse(activeTab.response), null, 2) }}
+                JSON.stringify(JSON.parse(activeTab.response.body), null, 2) }}
             </v-card-text>
-
           </v-card>
         </div>
       </div>
@@ -237,11 +228,26 @@ const send_request = () => {
   opacity: 1;
 }
 
-
 .container {
   width: 100%;
   height: 100%;
   padding: 10px;
+  display: flex;
+  box-sizing: border-box;
+  flex-direction: row;
+}
+
+.card-container {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  margin-left: 10px;
+  box-sizing: border-box;
+  justify-content: space-evenly;
+}
+
+.side-container {
+  min-width: 300px;
 }
 
 .flex-container {
@@ -249,18 +255,21 @@ const send_request = () => {
   flex-direction: column;
   height: 100%;
   margin-top: 10px;
+  justify-content: space-evenly;
 }
 
 .flex-row {
   display: flex;
   flex-direction: row;
   margin: 10px;
-  flex-grow: 0;
+  flex-grow: 1;
+  max-height: 50px;
 }
 
 .flex-row-grow {
-  flex-grow: 1;
-  margin: 20px;
+  margin-left: 20px;
+  margin-right: 20px;
+  padding-top: 20px;
 }
 
 .button-col,
@@ -281,15 +290,25 @@ const send_request = () => {
 .result-container {
   margin: 10px;
   flex-grow: 1;
+  box-sizing: border-box;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 .result-card {
   flex-grow: 1;
   height: 100%;
+  box-sizing: border-box;
   margin-left: 10px;
   margin-right: 10px;
   white-space: pre;
   font-family: monospace;
+}
+
+.result-box {
+  box-sizing: border-box;
+  overflow-y: scroll;
+  height: 100%;
 }
 
 .v-card-subtitle {
@@ -303,5 +322,4 @@ const send_request = () => {
   padding-top: 5px !important;
   padding-bottom: 5px !important;
 }
-
 </style>

@@ -8,8 +8,7 @@ export interface RequestTab {
 	uuid: string;
 	name: string;
 	url: string;
-	status: string;
-	response: string;
+	response: RequestResponse | undefined;
 	parameters: RequestParameter[];
 }
 
