@@ -247,7 +247,10 @@ const send_request = () => {
 }
 
 .side-container {
-  min-width: 300px;
+  min-width: 100px;
+  resize: horizontal;
+  width: 300px;
+  max-width: 600px;;
 }
 
 .flex-container {
