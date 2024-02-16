@@ -158,14 +158,14 @@ const send_request = () => {
           <v-table density="compact">
             <thead>
               <tr>
-                <th></th>
+                <th class="checkbox-column" ></th>
                 <th>Key</th>
                 <th>Value</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="activeTab" v-for="n in activeTab.parameters" :value="n" :key="n.uuid">
-                <td width="60"><v-checkbox density="compact" hide-details="auto" v-model="n.enabled"></v-checkbox></td>
+                <td><v-checkbox density="compact" hide-details="auto" v-model="n.enabled"></v-checkbox></td>
                 <td>
                   <v-text-field placeholder="Parameter" variant="plain" hide-details="auto" density="compact"
                     class="parameter-field" v-model="n.key"></v-text-field>
@@ -324,5 +324,9 @@ const send_request = () => {
   text-align: center;
   padding-top: 5px !important;
   padding-bottom: 5px !important;
+}
+
+.checkbox-column {
+  width: 3%;
 }
 </style>
