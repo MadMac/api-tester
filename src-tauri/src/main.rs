@@ -1,11 +1,22 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+extern crate diesel;
+
 use std::fmt::Debug;
 
+use env_logger::init;
 use log::{debug, info};
+use diesel::prelude::*;
 use reqwest::{header::HeaderMap, StatusCode};
 use serde::{ser::SerializeMap, Serialize};
+use fantastic_lamp::establish_connection;
+use uuid::Uuid;
+
+mod models;
+mod schema;
+
+use self::models::Config;
 
 #[derive(Debug, Clone, Serialize)]
 struct RequestResponse {
@@ -156,9 +167,42 @@ async fn send_delete_request(api_url: String) -> RequestResponse {
     }
 }
 
+fn get_latest_config() -> Config {
+    use self::schema::config::dsl::*;
+    let conn = &mut establish_connection();
+
+    debug!("Getting log dates");
+    let latest_config: Vec<Config> = config
+        .select(Config::as_select())
+        .load(conn)
+        .expect("Expected to get all daily logs");
+
+    debug!("{:?}", latest_config);
+
+    if latest_config.len() == 0 {
+        // No config found so init a new one
+        let init_config = Config {
+            uuid: Uuid::new_v4().to_string(),
+            config_data: String::from("{}")
+        };
+
+        diesel::insert_into(config)
+            .values(&init_config)
+            .execute(conn)
+            .unwrap();
+
+        return init_config;
+    }
+
+    return latest_config.first().unwrap().clone();
+}
+
 
 fn main() {
     env_logger::init_from_env(env_logger::Env::default().default_filter_or("debug"));
+
+    let config = get_latest_config();
+    debug!("{:?}", config);
 
     info!("Starting Tauri backend.");
     tauri::Builder::default()
