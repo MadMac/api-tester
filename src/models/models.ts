@@ -6,10 +6,8 @@ export interface RequestResponse {
 
 export interface RequestTab {
 	uuid: string;
-	name: string;
-	url: string;
-	response: RequestResponse | undefined;
-	parameters: RequestParameter[];
+	data: Tabdata;
+	saved_data: Tabdata | undefined;
 }
 
 export interface RequestParameter {
@@ -17,4 +15,11 @@ export interface RequestParameter {
 	enabled: boolean;
 	key: string;
 	value: string;
+}
+
+export interface Tabdata {
+	name: string;
+	url: string;
+	response: RequestResponse | undefined;
+	parameters: RequestParameter[];
 }

@@ -5,18 +5,17 @@ extern crate diesel;
 
 use std::fmt::Debug;
 
-use env_logger::init;
+use std::sync::Mutex;
 use log::{debug, info};
 use diesel::prelude::*;
 use reqwest::{header::HeaderMap, StatusCode};
 use serde::{ser::SerializeMap, Serialize};
-use fantastic_lamp::establish_connection;
+use fantastic_lamp::{establish_connection, AppState};
+use fantastic_lamp::models::Config;
 use uuid::Uuid;
 
 mod models;
 mod schema;
-
-use self::models::Config;
 
 #[derive(Debug, Clone, Serialize)]
 struct RequestResponse {
@@ -167,8 +166,10 @@ async fn send_delete_request(api_url: String) -> RequestResponse {
     }
 }
 
+// Get the config from db
+// if config doesn't exist, create a new one
 fn get_latest_config() -> Config {
-    use self::schema::config::dsl::*;
+    use fantastic_lamp::schema::config::dsl::*;
     let conn = &mut establish_connection();
 
     debug!("Getting log dates");
@@ -197,20 +198,32 @@ fn get_latest_config() -> Config {
     return latest_config.first().unwrap().clone();
 }
 
+#[tauri::command]
+fn save_session(session_data: String, config: tauri::State<ConfigState>) {
+    debug!("Save session: {:?}, data: {}", &config.0.config, session_data);
+    // TODO: Save session
+}
+
+struct ConfigState(AppState);
 
 fn main() {
     env_logger::init_from_env(env_logger::Env::default().default_filter_or("debug"));
 
     let config = get_latest_config();
+
     debug!("{:?}", config);
 
     info!("Starting Tauri backend.");
     tauri::Builder::default()
+        .manage(ConfigState(AppState {
+            config: Mutex::new(config),
+        }))
         .invoke_handler(tauri::generate_handler![
             send_get_request,
             send_post_request,
             send_put_request,
-            send_delete_request
+            send_delete_request,
+            save_session
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
