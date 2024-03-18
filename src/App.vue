@@ -14,7 +14,6 @@ const init_tabs = () => {
   const newTabData = {
     name: "Untitled",
     url: "",
-    status: "",
     response: undefined,
     parameters: []
   }
@@ -64,7 +63,6 @@ const add_new_tab = () => {
   const newTabData = {
     name: "Untitled",
     url: "",
-    status: "",
     response: undefined,
     parameters: []
   }
