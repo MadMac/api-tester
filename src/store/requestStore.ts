@@ -1,5 +1,5 @@
 import { reactive } from 'vue'
-import { RequestTab } from '../models/models'
+import { RequestTab, RequestParameter } from '../models/models'
 
 export const requestStore = reactive({
   tabs: [] as RequestTab[],
@@ -10,6 +10,15 @@ export const requestStore = reactive({
     const index = this.tabs.indexOf(tab);
     if (index !== -1) {
       this.tabs.splice(index, 1);
+    }
+  },
+  removeParameter(tab: RequestTab, parameter: RequestParameter) {
+    const index = this.tabs.indexOf(tab);
+    if (index !== -1) {
+      const parIndex = this.tabs[index].data.parameters.indexOf(parameter);
+      if (parIndex !== -1) {
+        this.tabs[index].data.parameters.splice(parIndex, 1);
+      }
     }
   },
   isTabsEmpty() {

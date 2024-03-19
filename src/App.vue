@@ -56,7 +56,7 @@ const tab_changed = () => {
 
 const save_session = () => {
   // Send command to backend to save the session to database
-  invoke('save_session', {sessionData: JSON.stringify(requestStore.tabs)});
+  invoke('save_session', { sessionData: JSON.stringify(requestStore.tabs) });
 }
 
 const add_new_tab = () => {
@@ -80,6 +80,10 @@ const remove_tab = (remove_tab: RequestTab) => {
   requestStore.removeTab(remove_tab);
   tab_changed();
   save_session();
+}
+
+const remove_parameter = (remove_parameter: RequestParameter) => {
+  requestStore.removeParameter(activeTab.value, remove_parameter);
 }
 
 const add_parameter = () => {
@@ -173,9 +177,10 @@ const send_request = () => {
           <v-table density="compact">
             <thead>
               <tr>
-                <th class="checkbox-column" ></th>
+                <th class="checkbox-column"></th>
                 <th>Key</th>
                 <th>Value</th>
+                <th class="checkbox-column"></th>
               </tr>
             </thead>
             <tbody>
@@ -189,9 +194,14 @@ const send_request = () => {
                   <v-text-field placeholder="Value" variant="plain" hide-details="auto" density="compact"
                     class="parameter-field"></v-text-field>
                 </td>
+                <td>
+                  <v-btn icon height="20" width="20" @click="remove_parameter(n)">
+                    <v-icon size="x-small">mdi-close-circle</v-icon>
+                  </v-btn>
+                </td>
               </tr>
               <tr>
-                <td colspan="3" class="parameter-add-button">
+                <td colspan="4" class="parameter-add-button">
                   <v-btn variant="flat" @click="add_parameter()">
                     <v-icon>mdi-plus-circle-outline</v-icon>
                   </v-btn>
@@ -204,11 +214,11 @@ const send_request = () => {
           <v-card class="result-card">
             <v-card-subtitle>
               {{ activeTab && activeTab.data.response && activeTab.data.response.status != "" ? "Status: " +
-                activeTab.data.response.status : "" }}
+          activeTab.data.response.status : "" }}
             </v-card-subtitle>
             <v-card-text class="result-box" scrollable>
               {{ activeTab && activeTab.data.response &&
-                JSON.stringify(JSON.parse(activeTab.data.response.body), null, 2) }}
+          JSON.stringify(JSON.parse(activeTab.data.response.body), null, 2) }}
             </v-card-text>
           </v-card>
         </div>
@@ -265,7 +275,8 @@ const send_request = () => {
   min-width: 100px;
   resize: horizontal;
   width: 300px;
-  max-width: 600px;;
+  max-width: 600px;
+  ;
 }
 
 .flex-container {
