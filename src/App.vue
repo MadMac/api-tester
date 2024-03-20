@@ -191,7 +191,7 @@ const send_request = () => {
                     class="parameter-field" v-model="n.key"></v-text-field>
                 </td>
                 <td>
-                  <v-text-field placeholder="Value" variant="plain" hide-details="auto" density="compact"
+                  <v-text-field placeholder="Value" variant="plain" hide-details="auto" v-model="n.value" density="compact"
                     class="parameter-field"></v-text-field>
                 </td>
                 <td>
