@@ -37,7 +37,7 @@ struct RequestResponseTest {
     status: StatusCode,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 struct RequestParameter {
     uuid: String,
     enabled: bool,
@@ -45,14 +45,14 @@ struct RequestParameter {
     value: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 struct FullTabdata {
     uuid: String,
     data: Tabdata,
     saved_data: Option<Tabdata>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 struct Tabdata {
     name: String,
     url: String,
@@ -186,9 +186,13 @@ fn get_latest_config() -> Config {
 
 #[tauri::command]
 fn save_session(session_data: String, config: tauri::State<ConfigState>) {
+    use crate::schema::requesttabs::dsl::*;
+    let session = &config.0.config;
+    let conn = &mut establish_connection();
+
     debug!(
         "Save session: {:?}, data: {}",
-        &config.0.config, session_data
+        session, session_data
     );
     let datas: Vec<FullTabdata> = match serde_json::from_str(session_data.as_str()) {
         Ok(val) => val,
@@ -198,7 +202,45 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
         }
     };
     debug!("Parsed data: {:?}", datas);
+
+    for fullTabData in datas {
+        debug!("{:?}", fullTabData);
+        
+        // Find old tabdata entry if it exists
+        let old_entry = requesttabs
+            .filter(uuid.eq(&fullTabData.uuid))
+            .first::<models::RequestTabs>(conn);
+
+        match old_entry {
+            Ok(_) => {
+                // TODO: Do update
+                debug!("Update data");
+            }
+            Err(_) => {
+                // TODO: Add new 
+                debug!("Add entry");
+                let new_entry = models::RequestTabs {
+                    uuid: fullTabData.uuid.clone(),
+                    tabdata: serde_json::to_string(&fullTabData.data.clone()).unwrap(),
+                    tabdata_saved: None,
+                    saved_timestamp: None,
+                };
+
+                diesel::insert_into(requesttabs)
+                    .values(&new_entry)
+                    .execute(conn).expect("Expect entry to be added");
+
+                info!("Added new entry: {:?}", new_entry);
+            }
+        }
+    }
+    
     // TODO: Save session
+    // For all tabs:
+    // Get tab if already saved
+    // Save data
+    // Make new save data if it doesn't exist yet
+    // Add to requesttabs_sessions?
 }
 
 struct ConfigState(AppState);
