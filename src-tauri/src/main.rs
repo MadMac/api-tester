@@ -217,12 +217,17 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
                 debug!("Update data");
             }
             Err(_) => {
-                // TODO: Add new 
                 debug!("Add entry");
+
+                let saved_data: Option<String> = match &fullTabData.saved_data {
+                    Some(val) => Some(serde_json::to_string(val).unwrap()),
+                    None => None
+                };
+
                 let new_entry = models::RequestTabs {
                     uuid: fullTabData.uuid.clone(),
                     tabdata: serde_json::to_string(&fullTabData.data.clone()).unwrap(),
-                    tabdata_saved: None,
+                    tabdata_saved: saved_data,
                     saved_timestamp: None,
                 };
 
