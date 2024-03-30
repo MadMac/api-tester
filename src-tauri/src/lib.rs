@@ -5,9 +5,16 @@ pub mod models;
 pub mod schema;
 use std::sync::Mutex;
 use models::Config;
+use serde::Deserialize;
+use serde::Serialize;
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct ConfigData {
+    pub last_session: String,
+}
 
 pub struct AppState {
-    pub config: Mutex<Config>,
+    pub config: Mutex<ConfigData>,
 }
 
 pub fn establish_connection() -> SqliteConnection {

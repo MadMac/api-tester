@@ -7,7 +7,7 @@ use std::fmt::Debug;
 
 use diesel::prelude::*;
 use fantastic_lamp::models::Config;
-use fantastic_lamp::{establish_connection, AppState};
+use fantastic_lamp::{establish_connection, AppState, ConfigData};
 use log::error;
 use log::{debug, info};
 use reqwest::{header::HeaderMap, StatusCode};
@@ -162,15 +162,21 @@ fn get_latest_config() -> Config {
     let latest_config: Vec<Config> = config
         .select(Config::as_select())
         .load(conn)
-        .expect("Expected to get all daily logs");
+        .expect("Expected to get configs");
 
     debug!("{:?}", latest_config);
 
     if latest_config.len() == 0 {
         // No config found so init a new one
+        
+        // Init session id
+        let init_config_data = ConfigData {
+            last_session: Uuid::new_v4().to_string()
+        };
+
         let init_config = Config {
             uuid: Uuid::new_v4().to_string(),
-            config_data: String::from("{}"),
+            config_data: serde_json::to_string(&init_config_data).unwrap(),
         };
 
         diesel::insert_into(config)
@@ -187,7 +193,8 @@ fn get_latest_config() -> Config {
 #[tauri::command]
 fn save_session(session_data: String, config: tauri::State<ConfigState>) {
     use crate::schema::requesttabs::dsl::*;
-    let session = &config.0.config;
+    use crate::schema::sessions::dsl as sessions_dsl;
+    let session = &config.0.config.lock().expect("Could not lock mutex");
     let conn = &mut establish_connection();
 
     debug!(
@@ -203,6 +210,7 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
     };
     debug!("Parsed data: {:?}", datas);
 
+    // Saving tab data to requesttabs
     for fullTabData in datas {
         debug!("{:?}", fullTabData);
         
@@ -239,6 +247,28 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
             }
         }
     }
+
+    // Save session uuid if it doesn't exist yet
+    let old_session_entry = sessions_dsl::sessions
+        .filter(sessions_dsl::uuid.eq(session.last_session.clone()))
+        .first::<models::Sessions>(conn);
+
+    match old_session_entry {
+        Ok(entry) => {
+            info!("Session found: {:?}", entry);
+        }
+        Err(_) => {
+            debug!("Add new session: {:?}", session.last_session);
+
+            let new_session_entry = models::Sessions {
+                uuid: session.last_session.clone()
+            };
+            
+            diesel::insert_into(sessions_dsl::sessions)
+                .values(&new_session_entry)
+                .execute(conn).expect("Expect to add a new session entry");
+        }
+    }
     
     // TODO: Save session
     // For all tabs:
@@ -248,19 +278,38 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
     // Add to requesttabs_sessions?
 }
 
+fn init_session_db(config: tauri::State<ConfigState>) {
+    use crate::schema::sessions::dsl::*;
+    let session = &config.0.config;
+    let conn = &mut establish_connection();
+
+    // Find old tabdata entry if it exists
+    // let old_entry = sessions
+    // .filter(uuid.eq())
+    // .first::<models::RequestTabs>(conn);
+}
+
 struct ConfigState(AppState);
 
 fn main() {
     env_logger::init_from_env(env_logger::Env::default().default_filter_or("debug"));
 
     let config = get_latest_config();
-
-    debug!("{:?}", config);
+    let config_data: ConfigData = match serde_json::from_str(config.config_data.as_str()) {
+        Ok(val) => val,
+        Err(err) => {
+            error!("ERROR: {}", err);
+            ConfigData{
+                last_session: String::new()
+            }
+        }
+    };
+    debug!("{:?}", config_data);
 
     info!("Starting Tauri backend.");
     tauri::Builder::default()
         .manage(ConfigState(AppState {
-            config: Mutex::new(config),
+            config: Mutex::new(config_data),
         }))
         .invoke_handler(tauri::generate_handler![
             send_get_request,
