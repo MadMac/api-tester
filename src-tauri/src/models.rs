@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::schema::config;
 use crate::schema::requesttabs;
 use crate::schema::sessions;
+use crate::schema::requesttabs_sessions;
 
 #[derive(Debug, Clone, Selectable, Serialize, Deserialize, Queryable, Insertable)]
 #[diesel(table_name = config)]
@@ -29,4 +30,13 @@ pub struct RequestTabs {
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct Sessions {
     pub uuid: String,
+}
+
+#[derive(Debug, Clone, Selectable, Serialize, Deserialize, Queryable, Insertable)]
+#[diesel(table_name = requesttabs_sessions)]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+pub struct RequestTabsSessions {
+    pub uuid: String,
+    pub requesttabs_uuid: String,
+    pub sessions_uuid: String,
 }

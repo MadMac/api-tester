@@ -6,7 +6,7 @@ extern crate diesel;
 use std::fmt::Debug;
 
 use diesel::prelude::*;
-use fantastic_lamp::models::Config;
+use fantastic_lamp::models::{Config, RequestTabsSessions};
 use fantastic_lamp::{establish_connection, AppState, ConfigData};
 use log::error;
 use log::{debug, info};
@@ -168,10 +168,10 @@ fn get_latest_config() -> Config {
 
     if latest_config.len() == 0 {
         // No config found so init a new one
-        
+
         // Init session id
         let init_config_data = ConfigData {
-            last_session: Uuid::new_v4().to_string()
+            last_session: Uuid::new_v4().to_string(),
         };
 
         let init_config = Config {
@@ -193,14 +193,12 @@ fn get_latest_config() -> Config {
 #[tauri::command]
 fn save_session(session_data: String, config: tauri::State<ConfigState>) {
     use crate::schema::requesttabs::dsl::*;
+    use crate::schema::requesttabs_sessions::dsl as requesttabs_sessions_dsl;
     use crate::schema::sessions::dsl as sessions_dsl;
     let session = &config.0.config.lock().expect("Could not lock mutex");
     let conn = &mut establish_connection();
 
-    debug!(
-        "Save session: {:?}, data: {}",
-        session, session_data
-    );
+    debug!("Save session: {:?}, data: {}", session, session_data);
     let datas: Vec<FullTabdata> = match serde_json::from_str(session_data.as_str()) {
         Ok(val) => val,
         Err(err) => {
@@ -210,26 +208,53 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
     };
     debug!("Parsed data: {:?}", datas);
 
+    // Save session uuid if it doesn't exist yet
+    let old_session_entry_query = sessions_dsl::sessions
+        .filter(sessions_dsl::uuid.eq(session.last_session.clone()))
+        .first::<models::Sessions>(conn);
+
+    let old_session_entry = match old_session_entry_query {
+        Ok(entry) => {
+            info!("Session found: {:?}", entry);
+            entry
+        }
+        Err(_) => {
+            debug!("Add new session: {:?}", session.last_session);
+
+            let new_session_entry = models::Sessions {
+                uuid: session.last_session.clone(),
+            };
+
+            diesel::insert_into(sessions_dsl::sessions)
+                .values(&new_session_entry)
+                .execute(conn)
+                .expect("Expect to add a new session entry");
+
+            new_session_entry
+        }
+    };
+
     // Saving tab data to requesttabs
     for fullTabData in datas {
         debug!("{:?}", fullTabData);
-        
+
         // Find old tabdata entry if it exists
-        let old_entry = requesttabs
+        let old_entry_query = requesttabs
             .filter(uuid.eq(&fullTabData.uuid))
             .first::<models::RequestTabs>(conn);
 
-        match old_entry {
-            Ok(_) => {
+        let old_entry = match old_entry_query {
+            Ok(entry) => {
                 // TODO: Do update
                 debug!("Update data");
+                entry
             }
             Err(_) => {
                 debug!("Add entry");
 
                 let saved_data: Option<String> = match &fullTabData.saved_data {
                     Some(val) => Some(serde_json::to_string(val).unwrap()),
-                    None => None
+                    None => None,
                 };
 
                 let new_entry = models::RequestTabs {
@@ -241,35 +266,41 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
 
                 diesel::insert_into(requesttabs)
                     .values(&new_entry)
-                    .execute(conn).expect("Expect entry to be added");
+                    .execute(conn)
+                    .expect("Expect entry to be added");
 
                 info!("Added new entry: {:?}", new_entry);
+
+                new_entry
             }
-        }
+        };
+
+        // Add to requesttabs_sessions
+        let request_tabs_sessions = models::RequestTabsSessions {
+            uuid: Uuid::new_v4().to_string(),
+            requesttabs_uuid: old_entry.uuid,
+            sessions_uuid: old_session_entry.uuid.clone(),
+        };
+
+        let old_requesttabs_essions_entry = requesttabs_sessions_dsl::requesttabs_sessions
+            .filter(requesttabs_sessions_dsl::requesttabs_uuid.eq(&request_tabs_sessions.requesttabs_uuid))
+            .filter(requesttabs_sessions_dsl::sessions_uuid.eq(&request_tabs_sessions.sessions_uuid))
+            .first::<models::RequestTabsSessions>(conn);
+
+        match old_requesttabs_essions_entry {
+            Ok(_) => {
+                debug!("Requesttabs_sessions found");
+            }
+            Err(_) => {
+                diesel::insert_into(requesttabs_sessions_dsl::requesttabs_sessions)
+                .values(&request_tabs_sessions)
+                .execute(conn)
+                .expect("Expect to add a new requesttabs_sessions entry");
+            }
+        };
+
     }
 
-    // Save session uuid if it doesn't exist yet
-    let old_session_entry = sessions_dsl::sessions
-        .filter(sessions_dsl::uuid.eq(session.last_session.clone()))
-        .first::<models::Sessions>(conn);
-
-    match old_session_entry {
-        Ok(entry) => {
-            info!("Session found: {:?}", entry);
-        }
-        Err(_) => {
-            debug!("Add new session: {:?}", session.last_session);
-
-            let new_session_entry = models::Sessions {
-                uuid: session.last_session.clone()
-            };
-            
-            diesel::insert_into(sessions_dsl::sessions)
-                .values(&new_session_entry)
-                .execute(conn).expect("Expect to add a new session entry");
-        }
-    }
-    
     // TODO: Save session
     // For all tabs:
     // Get tab if already saved
@@ -299,8 +330,8 @@ fn main() {
         Ok(val) => val,
         Err(err) => {
             error!("ERROR: {}", err);
-            ConfigData{
-                last_session: String::new()
+            ConfigData {
+                last_session: String::new(),
             }
         }
     };

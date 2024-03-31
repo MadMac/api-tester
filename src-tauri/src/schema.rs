@@ -19,8 +19,8 @@ diesel::table! {
 diesel::table! {
     requesttabs_sessions (uuid) {
         uuid -> Text,
-        requesttabs_uuid -> Nullable<Text>,
-        sessions_uuid -> Nullable<Text>,
+        requesttabs_uuid -> Text,
+        sessions_uuid -> Text,
     }
 }
 
