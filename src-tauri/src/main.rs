@@ -245,8 +245,16 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
 
         let old_entry = match old_entry_query {
             Ok(entry) => {
-                // TODO: Do update
                 debug!("Update data");
+
+                let _update_requesttab = diesel::update(
+                    requesttabs.filter(uuid.eq(&fullTabData.uuid))
+                )
+                .set(
+                    tabdata.eq(serde_json::to_string(&fullTabData.data.clone()).unwrap())
+                )
+                .execute(conn);
+
                 entry
             }
             Err(_) => {
