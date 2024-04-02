@@ -235,7 +235,7 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
     };
 
     // Saving tab data to requesttabs
-    for fullTabData in datas {
+    for fullTabData in &datas {
         debug!("{:?}", fullTabData);
 
         // Find old tabdata entry if it exists
@@ -247,13 +247,10 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
             Ok(entry) => {
                 debug!("Update data");
 
-                let _update_requesttab = diesel::update(
-                    requesttabs.filter(uuid.eq(&fullTabData.uuid))
-                )
-                .set(
-                    tabdata.eq(serde_json::to_string(&fullTabData.data.clone()).unwrap())
-                )
-                .execute(conn);
+                let _update_requesttab =
+                    diesel::update(requesttabs.filter(uuid.eq(&fullTabData.uuid)))
+                        .set(tabdata.eq(serde_json::to_string(&fullTabData.data.clone()).unwrap()))
+                        .execute(conn);
 
                 entry
             }
@@ -291,8 +288,13 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
         };
 
         let old_requesttabs_essions_entry = requesttabs_sessions_dsl::requesttabs_sessions
-            .filter(requesttabs_sessions_dsl::requesttabs_uuid.eq(&request_tabs_sessions.requesttabs_uuid))
-            .filter(requesttabs_sessions_dsl::sessions_uuid.eq(&request_tabs_sessions.sessions_uuid))
+            .filter(
+                requesttabs_sessions_dsl::requesttabs_uuid
+                    .eq(&request_tabs_sessions.requesttabs_uuid),
+            )
+            .filter(
+                requesttabs_sessions_dsl::sessions_uuid.eq(&request_tabs_sessions.sessions_uuid),
+            )
             .first::<models::RequestTabsSessions>(conn);
 
         match old_requesttabs_essions_entry {
@@ -301,12 +303,43 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
             }
             Err(_) => {
                 diesel::insert_into(requesttabs_sessions_dsl::requesttabs_sessions)
-                .values(&request_tabs_sessions)
-                .execute(conn)
-                .expect("Expect to add a new requesttabs_sessions entry");
+                    .values(&request_tabs_sessions)
+                    .execute(conn)
+                    .expect("Expect to add a new requesttabs_sessions entry");
             }
         };
 
+        // Clean deleted tabs from session db
+        let session_requesttabs: Vec<RequestTabsSessions> =
+            requesttabs_sessions_dsl::requesttabs_sessions
+                .filter(requesttabs_sessions_dsl::sessions_uuid.eq(session.last_session.clone()))
+                .get_results(conn)
+                .expect("Get request tab sessions");
+
+        for requesttab_session in session_requesttabs {
+            let mut tab_in_session = false;
+            for full_tab_data in &datas {
+                if full_tab_data.uuid == requesttab_session.requesttabs_uuid {
+                    tab_in_session = true;
+                }
+            }
+
+            if !tab_in_session {
+                // Delete the requesttabs_session object
+                debug!("Deleting tab {}", requesttab_session.uuid);
+                let _ = diesel::delete(
+                    requesttabs_sessions_dsl::requesttabs_sessions
+                        .filter(requesttabs_sessions_dsl::uuid.eq(requesttab_session.uuid)),
+                )
+                .execute(conn);
+
+                // Delete the requesttabs data
+                let _ = diesel::delete(
+                    requesttabs.filter(uuid.eq(requesttab_session.requesttabs_uuid)),
+                )
+                .execute(conn);
+            }
+        }
     }
 
     // TODO: Save session
