@@ -333,11 +333,26 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
                 )
                 .execute(conn);
 
-                // Delete the requesttabs data
-                let _ = diesel::delete(
-                    requesttabs.filter(uuid.eq(requesttab_session.requesttabs_uuid)),
-                )
-                .execute(conn);
+                // Delete the requesttabs data if it's not in any session anymore
+                let found_session = requesttabs_sessions_dsl::requesttabs_sessions
+                    .filter(
+                        requesttabs_sessions_dsl::requesttabs_uuid
+                            .eq(requesttab_session.requesttabs_uuid.clone()),
+                    )
+                    .first::<models::RequestTabsSessions>(conn);
+
+                match found_session {
+                    Ok(_) => {
+                        debug!("Session still found. Not deleting tab data.");
+                    }
+                    Err(_) => {
+                        debug!("Deleting tab data");
+                        let _ = diesel::delete(
+                            requesttabs.filter(uuid.eq(requesttab_session.requesttabs_uuid)),
+                        )
+                        .execute(conn);
+                    }
+                };
             }
         }
     }
