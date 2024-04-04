@@ -10,6 +10,7 @@ use fantastic_lamp::models::{Config, RequestTabsSessions};
 use fantastic_lamp::{establish_connection, AppState, ConfigData};
 use log::error;
 use log::{debug, info};
+use models::RequestTabs;
 use reqwest::{header::HeaderMap, StatusCode};
 use serde::Deserialize;
 use serde::Serialize;
@@ -235,12 +236,12 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
     };
 
     // Saving tab data to requesttabs
-    for fullTabData in &datas {
-        debug!("{:?}", fullTabData);
+    for full_tab_data in &datas {
+        debug!("{:?}", full_tab_data);
 
         // Find old tabdata entry if it exists
         let old_entry_query = requesttabs
-            .filter(uuid.eq(&fullTabData.uuid))
+            .filter(uuid.eq(&full_tab_data.uuid))
             .first::<models::RequestTabs>(conn);
 
         let old_entry = match old_entry_query {
@@ -248,8 +249,10 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
                 debug!("Update data");
 
                 let _update_requesttab =
-                    diesel::update(requesttabs.filter(uuid.eq(&fullTabData.uuid)))
-                        .set(tabdata.eq(serde_json::to_string(&fullTabData.data.clone()).unwrap()))
+                    diesel::update(requesttabs.filter(uuid.eq(&full_tab_data.uuid)))
+                        .set(
+                            tabdata.eq(serde_json::to_string(&full_tab_data.data.clone()).unwrap()),
+                        )
                         .execute(conn);
 
                 entry
@@ -257,14 +260,14 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
             Err(_) => {
                 debug!("Add entry");
 
-                let saved_data: Option<String> = match &fullTabData.saved_data {
+                let saved_data: Option<String> = match &full_tab_data.saved_data {
                     Some(val) => Some(serde_json::to_string(val).unwrap()),
                     None => None,
                 };
 
                 let new_entry = models::RequestTabs {
-                    uuid: fullTabData.uuid.clone(),
-                    tabdata: serde_json::to_string(&fullTabData.data.clone()).unwrap(),
+                    uuid: full_tab_data.uuid.clone(),
+                    tabdata: serde_json::to_string(&full_tab_data.data.clone()).unwrap(),
                     tabdata_saved: saved_data,
                     saved_timestamp: None,
                 };
@@ -356,24 +359,40 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
             }
         }
     }
-
-    // TODO: Save session
-    // For all tabs:
-    // Get tab if already saved
-    // Save data
-    // Make new save data if it doesn't exist yet
-    // Add to requesttabs_sessions?
 }
 
-fn init_session_db(config: tauri::State<ConfigState>) {
-    use crate::schema::sessions::dsl::*;
-    let session = &config.0.config;
+#[tauri::command]
+fn init_session(config: tauri::State<ConfigState>) -> Vec<RequestTabs> {
+    use crate::schema::requesttabs::dsl as requesttabs_dsl;
+    use crate::schema::requesttabs_sessions::dsl as requesttabs_sessions_dsl;
+    let session = &config.0.config.lock().expect("Could not lock mutex");
     let conn = &mut establish_connection();
 
-    // Find old tabdata entry if it exists
-    // let old_entry = sessions
-    // .filter(uuid.eq())
-    // .first::<models::RequestTabs>(conn);
+    let mut request_tabs: Vec<RequestTabs> = Vec::new();
+
+    debug!("Init session: {:?}", session);
+    let session_requesttabs: Vec<RequestTabsSessions> =
+        requesttabs_sessions_dsl::requesttabs_sessions
+            .filter(requesttabs_sessions_dsl::sessions_uuid.eq(session.last_session.clone()))
+            .get_results(conn)
+            .expect("Get request tab sessions");
+
+    for session_requsttab in session_requesttabs {
+        let requesttab_entry = requesttabs_dsl::requesttabs
+            .filter(requesttabs_dsl::uuid.eq(&session_requsttab.requesttabs_uuid))
+            .first::<models::RequestTabs>(conn);
+
+        match requesttab_entry {
+            Ok(tab_data) => {
+                request_tabs.push(tab_data)
+            }
+            Err(_) => {
+                debug!("Tab data doesn't exist: {:?}", session_requsttab.uuid);
+            }
+        };
+    }
+
+    request_tabs
 }
 
 struct ConfigState(AppState);
@@ -403,7 +422,8 @@ fn main() {
             send_post_request,
             send_put_request,
             send_delete_request,
-            save_session
+            save_session,
+            init_session
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

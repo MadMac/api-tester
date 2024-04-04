@@ -28,7 +28,11 @@ const init_tabs = () => {
 
 onMounted(() => {
   if (requestStore.isTabsEmpty()) {
+    invoke('init_session').then((response) => {
+      console.log(response);
+    });
     init_tabs();
+    console.log(requestStore.tabs)
   }
   tab_changed()
 })
@@ -191,8 +195,8 @@ const send_request = () => {
                     class="parameter-field" v-model="n.key"></v-text-field>
                 </td>
                 <td>
-                  <v-text-field placeholder="Value" variant="plain" hide-details="auto" v-model="n.value" density="compact"
-                    class="parameter-field"></v-text-field>
+                  <v-text-field placeholder="Value" variant="plain" hide-details="auto" v-model="n.value"
+                    density="compact" class="parameter-field"></v-text-field>
                 </td>
                 <td>
                   <v-btn icon height="20" width="20" @click="remove_parameter(n)">
