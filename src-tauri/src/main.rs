@@ -246,13 +246,14 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
 
         let old_entry = match old_entry_query {
             Ok(entry) => {
-                debug!("Update data");
+                debug!("Update data {:?}", full_tab_data.data.clone());
 
                 let _update_requesttab =
                     diesel::update(requesttabs.filter(uuid.eq(&full_tab_data.uuid)))
-                        .set(
+                        .set((
                             tabdata.eq(serde_json::to_string(&full_tab_data.data.clone()).unwrap()),
-                        )
+                            tabdata_saved.eq(serde_json::to_string(&full_tab_data.saved_data.clone()).unwrap()),
+                        ))
                         .execute(conn);
 
                 entry

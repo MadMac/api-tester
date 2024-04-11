@@ -35,6 +35,15 @@ onMounted(() => {
     console.log(requestStore.tabs)
   }
   tab_changed()
+
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.key === 's') {
+      e.preventDefault();
+      // Set activetab's saved_data to what is the current data
+      activeTab.value.saved_data = { ...activeTab.value.data };
+      save_session();
+    }
+  });
 })
 
 const update_tab_name = () => {
