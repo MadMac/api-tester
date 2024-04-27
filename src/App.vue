@@ -11,6 +11,7 @@ const requestType = ref("GET");
 const activeTab = ref();
 
 const init_tabs = () => {
+  console.log("Add tab")
   const newTabData = {
     name: "Untitled",
     url: "",
@@ -29,9 +30,18 @@ const init_tabs = () => {
 onMounted(() => {
   if (requestStore.isTabsEmpty()) {
     invoke('init_session').then((response) => {
-      console.log(response);
+      let requestTabs = response as []
+      if (requestTabs.length === 0) {
+        init_tabs();
+      } else {
+        requestStore.clearTabs();
+        requestTabs.forEach((tab) => {
+          requestStore.addNewTab(tab);
+        })
+      }
+      console.log(requestTabs);
     });
-    init_tabs();
+    
     console.log(requestStore.tabs)
   }
   tab_changed()

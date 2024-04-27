@@ -363,13 +363,13 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
 }
 
 #[tauri::command]
-fn init_session(config: tauri::State<ConfigState>) -> Vec<RequestTabs> {
+fn init_session(config: tauri::State<ConfigState>) -> Vec<FullTabdata> {
     use crate::schema::requesttabs::dsl as requesttabs_dsl;
     use crate::schema::requesttabs_sessions::dsl as requesttabs_sessions_dsl;
     let session = &config.0.config.lock().expect("Could not lock mutex");
     let conn = &mut establish_connection();
 
-    let mut request_tabs: Vec<RequestTabs> = Vec::new();
+    let mut request_tabs: Vec<FullTabdata> = Vec::new();
 
     debug!("Init session: {:?}", session);
     let session_requesttabs: Vec<RequestTabsSessions> =
@@ -385,7 +385,12 @@ fn init_session(config: tauri::State<ConfigState>) -> Vec<RequestTabs> {
 
         match requesttab_entry {
             Ok(tab_data) => {
-                request_tabs.push(tab_data)
+                let requestTab = FullTabdata {
+                    uuid: tab_data.uuid,
+                    data: serde_json::from_str(tab_data.tabdata.as_str()).unwrap(),
+                    saved_data: serde_json::from_str(tab_data.tabdata_saved.unwrap().as_str()).unwrap()
+                };
+                request_tabs.push(requestTab)
             }
             Err(_) => {
                 debug!("Tab data doesn't exist: {:?}", session_requsttab.uuid);

@@ -6,7 +6,7 @@ export const requestStore = reactive({
   addNewTab(tab: RequestTab) {
     this.tabs.push(tab);
   },
-  removeTab(tab: RequestTab) {
+  removeTab(tab: RequestTab) {  
     const index = this.tabs.indexOf(tab);
     if (index !== -1) {
       this.tabs.splice(index, 1);
@@ -23,5 +23,8 @@ export const requestStore = reactive({
   },
   isTabsEmpty() {
     return this.tabs.length === 0
+  },
+  clearTabs() {
+    this.tabs = [];
   }
 })
