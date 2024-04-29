@@ -2,6 +2,7 @@ import { reactive } from 'vue'
 import { RequestTab, RequestParameter } from '../models/models'
 
 export const requestStore = reactive({
+  activeTab: undefined as unknown as RequestTab,
   tabs: [] as RequestTab[],
   addNewTab(tab: RequestTab) {
     this.tabs.push(tab);

@@ -5,10 +5,12 @@ import { ref, onMounted } from 'vue'
 import { RequestResponse, RequestTab, RequestParameter } from './models/models'
 import { v4 as uuidv4 } from 'uuid';
 
+import SideBar from './components/SideBar.vue';
+import TabRow from './components/TabRow.vue';
+
 const apiUrl = ref("");
 const tabName = ref("")
 const requestType = ref("GET");
-const activeTab = ref();
 
 const init_tabs = () => {
   console.log("Add tab")
@@ -41,7 +43,7 @@ onMounted(() => {
       }
       console.log(requestTabs);
     });
-    
+
     console.log(requestStore.tabs)
   }
   tab_changed()
@@ -50,30 +52,32 @@ onMounted(() => {
     if (e.ctrlKey && e.key === 's') {
       e.preventDefault();
       // Set activetab's saved_data to what is the current data
-      activeTab.value.saved_data = { ...activeTab.value.data };
+      requestStore.activeTab.saved_data = { ...requestStore.activeTab.data };
       save_session();
     }
   });
 })
 
 const update_tab_name = () => {
-  activeTab.value.data.name = tabName.value
+  requestStore.activeTab.data.name = tabName.value
 }
 
 const update_api_url = () => {
-  activeTab.value.data.url = apiUrl.value
+  requestStore.activeTab.data.url = apiUrl.value
 }
 
 
 const tab_changed = () => {
-  if (activeTab.value !== undefined) {
-    tabName.value = activeTab.value.data.name
-    apiUrl.value = activeTab.value.data.url
+  if (requestStore.activeTab !== undefined) {
+    console.log("NOT INIT TABS")
+    tabName.value = requestStore.activeTab.data.name
+    apiUrl.value = requestStore.activeTab.data.url
   } else {
+    console.log("INIT TABS")
     if (requestStore.isTabsEmpty()) {
       init_tabs();
     }
-    activeTab.value = requestStore.tabs[requestStore.tabs.length - 1]
+    requestStore.activeTab = requestStore.tabs[requestStore.tabs.length - 1]
   }
 }
 
@@ -106,7 +110,7 @@ const remove_tab = (remove_tab: RequestTab) => {
 }
 
 const remove_parameter = (remove_parameter: RequestParameter) => {
-  requestStore.removeParameter(activeTab.value, remove_parameter);
+  requestStore.removeParameter(requestStore.activeTab, remove_parameter);
 }
 
 const add_parameter = () => {
@@ -116,18 +120,18 @@ const add_parameter = () => {
     key: "",
     value: ""
   }
-  activeTab.value.data.parameters.push(new_parameter);
+  requestStore.activeTab.data.parameters.push(new_parameter);
 }
 
 const send_request = () => {
   if (!apiUrl.value) return;
-  activeTab.value.data.response = "";
+  requestStore.activeTab.data.response = {} as RequestResponse;
   switch (requestType.value) {
     case "GET":
       invoke('send_get_request', { apiUrl: apiUrl.value })
         .then((response) => {
           let requestResponse = response as RequestResponse;
-          activeTab.value.data.response = requestResponse
+          requestStore.activeTab.data.response = requestResponse
           console.log(requestResponse)
         });
       break;
@@ -135,7 +139,7 @@ const send_request = () => {
       invoke('send_post_request', { apiUrl: apiUrl.value })
         .then((response) => {
           let requestResponse = response as RequestResponse;
-          activeTab.value.data.response = requestResponse
+          requestStore.activeTab.data.response = requestResponse
           console.log(response)
         });
       break;
@@ -143,7 +147,7 @@ const send_request = () => {
       invoke('send_put_request', { apiUrl: apiUrl.value })
         .then((response) => {
           let requestResponse = response as RequestResponse;
-          activeTab.value.data.response = requestResponse
+          requestStore.activeTab.data.response = requestResponse
           console.log(response)
         });
       break;
@@ -151,7 +155,7 @@ const send_request = () => {
       invoke('send_delete_request', { apiUrl: apiUrl.value })
         .then((response) => {
           let requestResponse = response as RequestResponse;
-          activeTab.value.data.response = requestResponse
+          requestStore.activeTab.data.response = requestResponse
           console.log(response)
         });
       break;
@@ -164,24 +168,10 @@ const send_request = () => {
 
 <template>
   <div class="container">
-    <v-card class="side-container" color="light-blue" variant="tonal">
-      <div class="flex-container flex-row">Test</div>
-    </v-card>
+    <SideBar />
     <v-card class="card-container" color="light-blue" variant="tonal">
       <div class="flex-container flex-row">
-        <v-tabs bg-color="light-blue-darken-4" @click="tab_changed()" v-model="activeTab" class="tab-container"
-          show-arrows>
-          <v-tab v-for="n in requestStore.tabs" :value="n">
-            {{ n ? n.data.name.substring(0, 10) : "Error" }}{{ n && n.data.name.length > 10 ? "..." : "" }}
-            <v-btn icon class="close-tab-button" color="light-blue-darken-4" height="20" width="20"
-              @click="remove_tab(n)">
-              <v-icon size="x-small">mdi-close-circle</v-icon>
-            </v-btn>
-          </v-tab>
-        </v-tabs>
-        <v-btn icon class="new-tab-button" color="light-blue-darken-1" height="35" width="35" @click="add_new_tab()">
-          <v-icon>mdi-plus-circle-outline</v-icon>
-        </v-btn>
+        <TabRow :tab_changed="tab_changed" :remove_tab="remove_tab" :add_new_tab="add_new_tab" />
       </div>
       <div class="flex-container">
         <div class="flex-row">
@@ -207,7 +197,8 @@ const send_request = () => {
               </tr>
             </thead>
             <tbody>
-              <tr v-if="activeTab" v-for="n in activeTab.data.parameters" :value="n" :key="n.uuid">
+              <tr v-if="requestStore.activeTab" v-for="n in requestStore.activeTab.data.parameters" :value="n"
+                :key="n.uuid">
                 <td><v-checkbox density="compact" hide-details="auto" v-model="n.enabled"></v-checkbox></td>
                 <td>
                   <v-text-field placeholder="Parameter" variant="plain" hide-details="auto" density="compact"
@@ -236,12 +227,14 @@ const send_request = () => {
         <div class="result-container">
           <v-card class="result-card">
             <v-card-subtitle>
-              {{ activeTab && activeTab.data.response && activeTab.data.response.status != "" ? "Status: " +
-          activeTab.data.response.status : "" }}
+              <!-- TODO: Move to function -->
+              {{ requestStore.activeTab && requestStore.activeTab.data.response &&
+          requestStore.activeTab.data.response.status != "" ? "Status: " +
+        requestStore.activeTab.data.response.status : "" }} 
             </v-card-subtitle>
             <v-card-text class="result-box" scrollable>
-              {{ activeTab && activeTab.data.response &&
-          JSON.stringify(JSON.parse(activeTab.data.response.body), null, 2) }}
+              {{ requestStore.activeTab && requestStore.activeTab.data.response &&
+          JSON.stringify(JSON.parse(requestStore.activeTab.data.response.body), null, 2) }}
             </v-card-text>
           </v-card>
         </div>
@@ -254,26 +247,6 @@ const send_request = () => {
 .tab-container {
   flex-grow: 1;
   margin-right: 20px;
-}
-
-.new-tab-button {
-  margin-top: auto;
-  margin-bottom: auto;
-  margin-left: auto;
-  margin-right: 10px;
-  max-width: 35px;
-}
-
-.close-tab-button {
-  margin-top: auto;
-  margin-bottom: auto;
-  margin-left: 10px;
-  margin-right: 0px;
-  opacity: 0;
-}
-
-.close-tab-button:hover {
-  opacity: 1;
 }
 
 .container {
@@ -292,14 +265,6 @@ const send_request = () => {
   margin-left: 10px;
   box-sizing: border-box;
   justify-content: space-evenly;
-}
-
-.side-container {
-  min-width: 100px;
-  resize: horizontal;
-  width: 300px;
-  max-width: 600px;
-  ;
 }
 
 .flex-container {
