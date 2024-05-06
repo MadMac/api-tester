@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { requestStore } from '../store/requestStore.js'
-import { RequestResponse, RequestTab, RequestParameter } from './models/models'
+import { RequestParameter } from '../models/models'
 import { v4 as uuidv4 } from 'uuid';
 
 const add_parameter = () => {

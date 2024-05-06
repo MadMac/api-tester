@@ -41,11 +41,10 @@ onMounted(() => {
         requestTabs.forEach((tab) => {
           requestStore.addNewTab(tab);
         })
+        requestStore.activeTab = requestStore.tabs[0]
+        tab_changed()
       }
-      console.log(requestTabs);
     });
-
-    console.log(requestStore.tabs)
   }
   tab_changed()
 
@@ -70,11 +69,9 @@ const update_api_url = () => {
 
 const tab_changed = () => {
   if (requestStore.activeTab !== undefined) {
-    console.log("NOT INIT TABS")
     tabName.value = requestStore.activeTab.data.name
     apiUrl.value = requestStore.activeTab.data.url
   } else {
-    console.log("INIT TABS")
     if (requestStore.isTabsEmpty()) {
       init_tabs();
     }
@@ -151,6 +148,14 @@ const send_request = () => {
   }
 
 }
+
+const status_text_handling = () => {
+  if (requestStore.activeTab && requestStore.activeTab.data.response && requestStore.activeTab.data.response.status != "") {
+    return "Status: " + requestStore.activeTab.data.response.status
+  }
+  return ""
+}
+
 </script>
 
 <template>
@@ -179,10 +184,7 @@ const send_request = () => {
         <div class="result-container">
           <v-card class="result-card">
             <v-card-subtitle>
-              <!-- TODO: Move to function -->
-              {{ requestStore.activeTab && requestStore.activeTab.data.response &&
-          requestStore.activeTab.data.response.status != "" ? "Status: " +
-        requestStore.activeTab.data.response.status : "" }} 
+              {{ status_text_handling() }} 
             </v-card-subtitle>
             <v-card-text class="result-box" scrollable>
               {{ requestStore.activeTab && requestStore.activeTab.data.response &&
