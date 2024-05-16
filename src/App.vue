@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { invoke } from '@tauri-apps/api'
 import { requestStore } from './store/requestStore.js'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { RequestResponse, RequestTab } from './models/models'
 import { v4 as uuidv4 } from 'uuid';
 
@@ -9,8 +9,6 @@ import SideBar from './components/SideBar.vue';
 import TabRow from './components/TabRow.vue';
 import ParameterTable from './components/ParameterTable.vue';
 
-const apiUrl = ref("");
-const tabName = ref("")
 const requestType = ref("GET");
 
 const init_tabs = () => {
@@ -58,20 +56,8 @@ onMounted(() => {
   });
 })
 
-const update_tab_name = () => {
-  requestStore.activeTab.data.name = tabName.value
-}
-
-const update_api_url = () => {
-  requestStore.activeTab.data.url = apiUrl.value
-}
-
-
 const tab_changed = () => {
-  if (requestStore.activeTab !== undefined) {
-    tabName.value = requestStore.activeTab.data.name
-    apiUrl.value = requestStore.activeTab.data.url
-  } else {
+  if (requestStore.activeTab == undefined) {
     if (requestStore.isTabsEmpty()) {
       init_tabs();
     }
@@ -108,11 +94,11 @@ const remove_tab = (remove_tab: RequestTab) => {
 }
 
 const send_request = () => {
-  if (!apiUrl.value) return;
+  if (!requestStore.activeTab.data.url) return;
   requestStore.activeTab.data.response = {} as RequestResponse;
   switch (requestType.value) {
     case "GET":
-      invoke('send_get_request', { apiUrl: apiUrl.value })
+      invoke('send_get_request', { apiUrl: requestStore.activeTab.data.url })
         .then((response) => {
           let requestResponse = response as RequestResponse;
           requestStore.activeTab.data.response = requestResponse
@@ -120,7 +106,7 @@ const send_request = () => {
         });
       break;
     case "POST":
-      invoke('send_post_request', { apiUrl: apiUrl.value })
+      invoke('send_post_request', { apiUrl: requestStore.activeTab.data.url })
         .then((response) => {
           let requestResponse = response as RequestResponse;
           requestStore.activeTab.data.response = requestResponse
@@ -128,7 +114,7 @@ const send_request = () => {
         });
       break;
     case "PUT":
-      invoke('send_put_request', { apiUrl: apiUrl.value })
+      invoke('send_put_request', { apiUrl: requestStore.activeTab.data.url })
         .then((response) => {
           let requestResponse = response as RequestResponse;
           requestStore.activeTab.data.response = requestResponse
@@ -136,7 +122,7 @@ const send_request = () => {
         });
       break;
     case "DELETE":
-      invoke('send_delete_request', { apiUrl: apiUrl.value })
+      invoke('send_delete_request', { apiUrl: requestStore.activeTab.data.url })
         .then((response) => {
           let requestResponse = response as RequestResponse;
           requestStore.activeTab.data.response = requestResponse
@@ -156,6 +142,32 @@ const status_text_handling = () => {
   return ""
 }
 
+const activeTabName = computed({
+  get() {
+    console.log(requestStore.activeTab)
+    if (requestStore.activeTab && requestStore.activeTab.data) {
+      return requestStore.activeTab.data.name;
+     }
+    return ""
+  },
+  set(newValue: string) {
+    requestStore.activeTab.data.name = newValue;
+  }
+})
+
+const activeTabUrl = computed({
+  get() {
+    console.log(requestStore.activeTab)
+    if (requestStore.activeTab && requestStore.activeTab.data) {
+      return requestStore.activeTab.data.url;
+     }
+    return ""
+  },
+  set(newValue: string) {
+    requestStore.activeTab.data.url = newValue;
+  }
+})
+
 </script>
 
 <template>
@@ -167,13 +179,13 @@ const status_text_handling = () => {
       </div>
       <div class="flex-container">
         <div class="flex-row">
-          <v-text-field label="Name" class="input-col" @input="update_tab_name()" v-model="tabName"
+          <v-text-field label="Name" class="input-col" v-model="activeTabName"
             hide-details="auto"></v-text-field>
         </div>
         <div class="flex-row">
           <v-select label="Method" :items="['GET', 'POST', 'PUT', 'DELETE']" class="select-col"
             v-model="requestType"></v-select>
-          <v-text-field label="Url" class="input-col" @input="update_api_url()" v-model="apiUrl"></v-text-field>
+          <v-text-field label="Url" class="input-col" v-model="activeTabUrl"></v-text-field>
           <v-btn block class="button-col" size="x-large" color="light-blue-darken-1" @click="send_request()">
             SEND
           </v-btn>
