@@ -3,6 +3,7 @@
 
 extern crate diesel;
 
+use std::collections::HashMap;
 use std::fmt::Debug;
 
 use diesel::prelude::*;
@@ -63,9 +64,18 @@ struct Tabdata {
 #[tauri::command]
 async fn send_get_request(tab_data: Tabdata) -> RequestResponse {
     info!("Run GET request {:?}", tab_data);
+
+    let mut params_map = HashMap::new();
+    for param in tab_data.parameters {
+        if param.enabled {
+            params_map.insert(param.key, param.value);
+        }
+    }
+    let params_url = reqwest::Url::parse_with_params(tab_data.url.as_str(), &params_map).unwrap();
+
     let client = reqwest::Client::new();
     let request = client
-        .get(tab_data.url)
+        .get(params_url)
         .header(reqwest::header::USER_AGENT, "TestApi/1.0")
         .send()
         .await
