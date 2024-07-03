@@ -27,5 +27,8 @@ export const requestStore = reactive({
   },
   clearTabs() {
     this.tabs = [];
+  },
+  setActiveTab(tab: RequestTab) {
+    this.activeTab = tab
   }
 })

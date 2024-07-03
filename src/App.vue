@@ -39,7 +39,7 @@ onMounted(() => {
         requestTabs.forEach((tab) => {
           requestStore.addNewTab(tab);
         })
-        requestStore.activeTab = requestStore.tabs[0]
+        requestStore.setActiveTab(requestStore.tabs[0])
         tab_changed()
       }
     });
@@ -61,7 +61,7 @@ const tab_changed = () => {
     if (requestStore.isTabsEmpty()) {
       init_tabs();
     }
-    requestStore.activeTab = requestStore.tabs[requestStore.tabs.length - 1]
+    requestStore.setActiveTab(requestStore.tabs[requestStore.tabs.length - 1])
   }
 }
 
