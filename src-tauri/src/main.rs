@@ -10,7 +10,6 @@ use fantastic_lamp::models::{Config, RequestTabsSessions};
 use fantastic_lamp::{establish_connection, AppState, ConfigData};
 use log::error;
 use log::{debug, info};
-use models::RequestTabs;
 use reqwest::{header::HeaderMap, StatusCode};
 use serde::Deserialize;
 use serde::Serialize;
@@ -62,11 +61,11 @@ struct Tabdata {
 }
 
 #[tauri::command]
-async fn send_get_request(api_url: String) -> RequestResponse {
-    info!("Run GET request {:?}", api_url);
+async fn send_get_request(tab_data: Tabdata) -> RequestResponse {
+    info!("Run GET request {:?}", tab_data);
     let client = reqwest::Client::new();
     let request = client
-        .get(api_url)
+        .get(tab_data.url)
         .header(reqwest::header::USER_AGENT, "TestApi/1.0")
         .send()
         .await
@@ -85,11 +84,11 @@ async fn send_get_request(api_url: String) -> RequestResponse {
 }
 
 #[tauri::command]
-async fn send_post_request(api_url: String) -> RequestResponse {
-    info!("Run POST request {:?}", api_url);
+async fn send_post_request(tab_data: Tabdata) -> RequestResponse {
+    info!("Run POST request {:?}", tab_data);
     let client = reqwest::Client::new();
     let request = client
-        .post(api_url)
+        .post(tab_data.url)
         .header(reqwest::header::USER_AGENT, "TestApi/1.0")
         .send()
         .await
@@ -108,11 +107,11 @@ async fn send_post_request(api_url: String) -> RequestResponse {
 }
 
 #[tauri::command]
-async fn send_put_request(api_url: String) -> RequestResponse {
-    info!("Run PUT request {:?}", api_url);
+async fn send_put_request(tab_data: Tabdata) -> RequestResponse {
+    info!("Run PUT request {:?}", tab_data);
     let client = reqwest::Client::new();
     let request = client
-        .put(api_url)
+        .put(tab_data.url)
         .header(reqwest::header::USER_AGENT, "TestApi/1.0")
         .send()
         .await
@@ -131,11 +130,11 @@ async fn send_put_request(api_url: String) -> RequestResponse {
 }
 
 #[tauri::command]
-async fn send_delete_request(api_url: String) -> RequestResponse {
-    info!("Run DELETE request {:?}", api_url);
+async fn send_delete_request(tab_data: Tabdata) -> RequestResponse {
+    info!("Run DELETE request {:?}", tab_data);
     let client = reqwest::Client::new();
     let request = client
-        .delete(api_url)
+        .delete(tab_data.url)
         .header(reqwest::header::USER_AGENT, "TestApi/1.0")
         .send()
         .await
@@ -385,12 +384,12 @@ fn init_session(config: tauri::State<ConfigState>) -> Vec<FullTabdata> {
 
         match requesttab_entry {
             Ok(tab_data) => {
-                let requestTab = FullTabdata {
+                let request_tab = FullTabdata {
                     uuid: tab_data.uuid,
                     data: serde_json::from_str(tab_data.tabdata.as_str()).unwrap(),
                     saved_data: serde_json::from_str(tab_data.tabdata_saved.unwrap().as_str()).unwrap()
                 };
-                request_tabs.push(requestTab)
+                request_tabs.push(request_tab)
             }
             Err(_) => {
                 debug!("Tab data doesn't exist: {:?}", session_requsttab.uuid);

@@ -96,9 +96,14 @@ const remove_tab = (remove_tab: RequestTab) => {
 const send_request = () => {
   if (!requestStore.activeTab.data.url) return;
   requestStore.activeTab.data.response = {} as RequestResponse;
+
+  // Response data should be empty when sending tab data to the backend
+  const tab_data = requestStore.activeTab.data
+  tab_data.response = undefined;
+
   switch (requestType.value) {
     case "GET":
-      invoke('send_get_request', { apiUrl: requestStore.activeTab.data.url })
+      invoke('send_get_request', { tabData: tab_data })
         .then((response) => {
           let requestResponse = response as RequestResponse;
           requestStore.activeTab.data.response = requestResponse
@@ -106,7 +111,7 @@ const send_request = () => {
         });
       break;
     case "POST":
-      invoke('send_post_request', { apiUrl: requestStore.activeTab.data.url })
+      invoke('send_post_request', { tabData: tab_data })
         .then((response) => {
           let requestResponse = response as RequestResponse;
           requestStore.activeTab.data.response = requestResponse
@@ -114,7 +119,7 @@ const send_request = () => {
         });
       break;
     case "PUT":
-      invoke('send_put_request', { apiUrl: requestStore.activeTab.data.url })
+      invoke('send_put_request', { tabData: tab_data })
         .then((response) => {
           let requestResponse = response as RequestResponse;
           requestStore.activeTab.data.response = requestResponse
@@ -122,7 +127,7 @@ const send_request = () => {
         });
       break;
     case "DELETE":
-      invoke('send_delete_request', { apiUrl: requestStore.activeTab.data.url })
+      invoke('send_delete_request', { tabData: tab_data })
         .then((response) => {
           let requestResponse = response as RequestResponse;
           requestStore.activeTab.data.response = requestResponse
