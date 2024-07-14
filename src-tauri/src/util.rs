@@ -1,12 +1,9 @@
-extern crate diesel;
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
-pub mod models;
-pub mod schema;
 use std::sync::Mutex;
-use models::Config;
 use serde::Deserialize;
 use serde::Serialize;
+
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ConfigData {

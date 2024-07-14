@@ -3,12 +3,16 @@
 
 extern crate diesel;
 
+mod models;
+mod schema;
+mod util;
+
 use std::collections::HashMap;
 use std::fmt::Debug;
 
 use diesel::prelude::*;
-use fantastic_lamp::models::{Config, RequestTabsSessions};
-use fantastic_lamp::{establish_connection, AppState, ConfigData};
+use models::{Config, RequestTabsSessions};
+use util::{establish_connection, AppState, ConfigData};
 use log::error;
 use log::{debug, info};
 use reqwest::{header::HeaderMap, StatusCode};
@@ -16,9 +20,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::sync::Mutex;
 use uuid::Uuid;
-
-mod models;
-mod schema;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 struct RequestResponse {
@@ -165,7 +166,7 @@ async fn send_delete_request(tab_data: Tabdata) -> RequestResponse {
 // Get the config from db
 // if config doesn't exist, create a new one
 fn get_latest_config() -> Config {
-    use fantastic_lamp::schema::config::dsl::*;
+    use schema::config::dsl::*;
     let conn = &mut establish_connection();
 
     debug!("Getting log dates");
@@ -202,9 +203,9 @@ fn get_latest_config() -> Config {
 
 #[tauri::command]
 fn save_session(session_data: String, config: tauri::State<ConfigState>) {
-    use crate::schema::requesttabs::dsl::*;
-    use crate::schema::requesttabs_sessions::dsl as requesttabs_sessions_dsl;
-    use crate::schema::sessions::dsl as sessions_dsl;
+    use schema::requesttabs::dsl::*;
+    use schema::requesttabs_sessions::dsl as requesttabs_sessions_dsl;
+    use schema::sessions::dsl as sessions_dsl;
     let session = &config.0.config.lock().expect("Could not lock mutex");
     let conn = &mut establish_connection();
 
@@ -373,8 +374,8 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
 
 #[tauri::command]
 fn init_session(config: tauri::State<ConfigState>) -> Vec<FullTabdata> {
-    use crate::schema::requesttabs::dsl as requesttabs_dsl;
-    use crate::schema::requesttabs_sessions::dsl as requesttabs_sessions_dsl;
+    use schema::requesttabs::dsl as requesttabs_dsl;
+    use schema::requesttabs_sessions::dsl as requesttabs_sessions_dsl;
     let session = &config.0.config.lock().expect("Could not lock mutex");
     let conn = &mut establish_connection();
 
