@@ -10,6 +10,7 @@ import TabRow from './components/TabRow.vue';
 import ParameterTable from './components/ParameterTable.vue';
 
 const requestType = ref("GET");
+const additionalFeatures = ref();
 
 const init_tabs = () => {
   console.log("Add tab")
@@ -152,7 +153,7 @@ const activeTabName = computed({
     console.log(requestStore.activeTab)
     if (requestStore.activeTab && requestStore.activeTab.data) {
       return requestStore.activeTab.data.name;
-     }
+    }
     return ""
   },
   set(newValue: string) {
@@ -165,7 +166,7 @@ const activeTabUrl = computed({
     console.log(requestStore.activeTab)
     if (requestStore.activeTab && requestStore.activeTab.data) {
       return requestStore.activeTab.data.url;
-     }
+    }
     return ""
   },
   set(newValue: string) {
@@ -184,8 +185,7 @@ const activeTabUrl = computed({
       </div>
       <div class="flex-container">
         <div class="flex-row">
-          <v-text-field label="Name" class="input-col" v-model="activeTabName"
-            hide-details="auto"></v-text-field>
+          <v-text-field label="Name" class="input-col" v-model="activeTabName" hide-details="auto"></v-text-field>
         </div>
         <div class="flex-row">
           <v-select label="Method" :items="['GET', 'POST', 'PUT', 'DELETE']" class="select-col"
@@ -196,12 +196,34 @@ const activeTabUrl = computed({
           </v-btn>
         </div>
         <div class="flex-row-grow">
-          <ParameterTable />
+          <v-tabs align-tabs="center" color="white" height="60" slider-color="#2196F3" v-model="additionalFeatures"
+            class="tab-bottom-margin">
+            <v-tab value="headers">
+              Headers
+            </v-tab>
+            <v-tab value="parameters">
+              Parameters
+            </v-tab>
+            <v-tab value="body">
+              Body
+            </v-tab>
+          </v-tabs>
+          <v-tabs-window v-model="additionalFeatures">
+            <v-tabs-window-item value="headers">
+              Headers
+            </v-tabs-window-item>
+            <v-tabs-window-item value="parameters">
+              <ParameterTable />
+            </v-tabs-window-item>
+            <v-tabs-window-item value="body">
+              Body
+            </v-tabs-window-item>
+          </v-tabs-window>
         </div>
         <div class="result-container">
           <v-card class="result-card">
             <v-card-subtitle>
-              {{ status_text_handling() }} 
+              {{ status_text_handling() }}
             </v-card-subtitle>
             <v-card-text class="result-box" scrollable>
               {{ requestStore.activeTab && requestStore.activeTab.data.response &&
@@ -302,5 +324,9 @@ const activeTabUrl = computed({
 .v-card-subtitle {
   text-align: right;
   margin: 10px;
+}
+
+.tab-bottom-margin {
+  margin-bottom: 20px;
 }
 </style>
