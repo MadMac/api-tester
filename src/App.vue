@@ -94,6 +94,14 @@ const remove_tab = (remove_tab: RequestTab) => {
   save_session();
 }
 
+const response_handler = (response: string) => {
+  try {
+    return JSON.stringify(JSON.parse(response), null, 2);
+  } catch (e) {
+    return response;
+  }
+}
+
 const send_request = () => {
   if (!requestStore.activeTab.data.url) return;
   requestStore.activeTab.data.response = {} as RequestResponse;
@@ -227,7 +235,7 @@ const activeTabUrl = computed({
             </v-card-subtitle>
             <v-card-text class="result-box" scrollable>
               {{ requestStore.activeTab && requestStore.activeTab.data.response &&
-          JSON.stringify(JSON.parse(requestStore.activeTab.data.response.body), null, 2) }}
+          response_handler(requestStore.activeTab.data.response.body) }}
             </v-card-text>
           </v-card>
         </div>
