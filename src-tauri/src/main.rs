@@ -75,23 +75,37 @@ async fn send_get_request(tab_data: Tabdata) -> RequestResponse {
     let params_url = reqwest::Url::parse_with_params(tab_data.url.as_str(), &params_map).unwrap();
 
     let client = reqwest::Client::new();
-    let request = client
+    let request: RequestResponse = match client
         .get(params_url)
         .header(reqwest::header::USER_AGENT, "TestApi/1.0")
         .send()
-        .await
-        .unwrap();
+        .await {
+            Ok(request) =>  {
+                debug!("GET response: {:?}", request);
+                let headers = request.headers().clone();
+                let status = request.status().clone();
+                let body = request.text().await.unwrap();
+            
+                RequestResponse {
+                    body,
+                    headers,
+                    status,
+                }
+            },
+            Err(err) => {
+                let body = String::from("Error sending request");
+                let headers = HeaderMap::new();
+                let status = StatusCode::IM_A_TEAPOT;
 
-    debug!("GET response: {:?}", request);
-    let headers = request.headers().clone();
-    let status = request.status().clone();
-    let body = request.text().await.unwrap();
+                RequestResponse {
+                    body,
+                    headers,
+                    status,
+                }
+            }
+        };
 
-    RequestResponse {
-        body,
-        headers,
-        status,
-    }
+    return request;
 }
 
 #[tauri::command]
