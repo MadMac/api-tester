@@ -382,8 +382,9 @@ fn init_session(config: tauri::State<ConfigState>) -> Vec<FullTabdata> {
                 let request_tab = FullTabdata {
                     uuid: tab_data.uuid,
                     data: serde_json::from_str(tab_data.tabdata.as_str()).unwrap(),
-                    saved_data: serde_json::from_str(tab_data.tabdata_saved.unwrap().as_str())
-                        .unwrap(),
+                    saved_data: tab_data
+                        .tabdata_saved
+                        .and_then(|val| serde_json::from_str(val.as_str()).unwrap()),
                 };
                 request_tabs.push(request_tab)
             }
