@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { invoke } from '@tauri-apps/api'
+import { invoke } from '@tauri-apps/api/core'
 import { requestStore } from './store/requestStore.js'
 import { ref, onMounted, computed } from 'vue'
 import { RequestResponse, RequestTab } from './models/models'

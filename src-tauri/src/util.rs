@@ -1,9 +1,8 @@
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
-use std::sync::Mutex;
 use serde::Deserialize;
 use serde::Serialize;
-
+use std::sync::Mutex;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ConfigData {
