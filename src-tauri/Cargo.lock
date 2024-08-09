@@ -820,6 +820,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "serde_nested_with",
  "tauri",
  "tauri-build",
  "uuid",
@@ -2771,6 +2772,18 @@ dependencies = [
  "itoa 1.0.11",
  "ryu",
  "serde",
+]
+
+[[package]]
+name = "serde_nested_with"
+version = "0.2.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2e5de5df86900414dd5f677bcf85486948fdb36c84d4aad54434b9bcdd2d574"
+dependencies = [
+ "darling",
+ "proc-macro-error",
+ "quote",
+ "syn 2.0.71",
 ]
 
 [[package]]

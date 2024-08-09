@@ -7,27 +7,30 @@ mod models;
 mod schema;
 mod util;
 
+use serde_nested_with::serde_nested;
+
 use std::collections::HashMap;
 use std::fmt::Debug;
 
 use diesel::prelude::*;
-use models::{Config, RequestTabsSessions};
-use util::{establish_connection, AppState, ConfigData};
 use log::error;
 use log::{debug, info};
-use reqwest::{header::HeaderMap, StatusCode};
+use models::{Config, RequestTabsSessions};
+use reqwest::{header::HeaderMap, Method, StatusCode};
 use serde::Deserialize;
 use serde::Serialize;
 use std::sync::Mutex;
+use util::{establish_connection, AppState, ConfigData};
 use uuid::Uuid;
 
+#[serde_nested]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 struct RequestResponse {
     body: String,
     #[serde(with = "http_serde::header_map")]
     headers: HeaderMap,
-    #[serde(with = "http_serde::status_code")]
-    status: StatusCode,
+    #[serde_nested(sub = "StatusCode", serde(with = "http_serde::status_code"))]
+    status: Option<StatusCode>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -66,115 +69,80 @@ struct Tabdata {
 async fn send_get_request(tab_data: Tabdata) -> RequestResponse {
     info!("Run GET request {:?}", tab_data);
 
+    // Add parameters to the URL
     let mut params_map = HashMap::new();
     for param in tab_data.parameters {
         if param.enabled {
             params_map.insert(param.key, param.value);
         }
     }
-    let params_url = reqwest::Url::parse_with_params(tab_data.url.as_str(), &params_map).unwrap();
+    let url = reqwest::Url::parse_with_params(tab_data.url.as_str(), &params_map).unwrap();
+    let response: RequestResponse = send_request(Method::GET, url).await;
 
-    let client = reqwest::Client::new();
-    let request: RequestResponse = match client
-        .get(params_url)
-        .header(reqwest::header::USER_AGENT, "TestApi/1.0")
-        .send()
-        .await {
-            Ok(request) =>  {
-                debug!("GET response: {:?}", request);
-                let headers = request.headers().clone();
-                let status = request.status().clone();
-                let body = request.text().await.unwrap();
-            
-                RequestResponse {
-                    body,
-                    headers,
-                    status,
-                }
-            },
-            Err(err) => {
-                let body = String::from("Error sending request");
-                let headers = HeaderMap::new();
-                let status = StatusCode::IM_A_TEAPOT;
-
-                RequestResponse {
-                    body,
-                    headers,
-                    status,
-                }
-            }
-        };
-
-    return request;
+    return response;
 }
 
 #[tauri::command]
 async fn send_post_request(tab_data: Tabdata) -> RequestResponse {
     info!("Run POST request {:?}", tab_data);
-    let client = reqwest::Client::new();
-    let request = client
-        .post(tab_data.url)
-        .header(reqwest::header::USER_AGENT, "TestApi/1.0")
-        .send()
-        .await
-        .unwrap();
+    let url = reqwest::Url::parse(tab_data.url.as_str()).unwrap();
+    let response: RequestResponse = send_request(Method::POST, url).await;
 
-    debug!("POST response: {:?}", request);
-    let headers = request.headers().clone();
-    let status = request.status().clone();
-    let body = request.text().await.unwrap();
-
-    RequestResponse {
-        body,
-        headers,
-        status,
-    }
+    return response;
 }
 
 #[tauri::command]
 async fn send_put_request(tab_data: Tabdata) -> RequestResponse {
     info!("Run PUT request {:?}", tab_data);
-    let client = reqwest::Client::new();
-    let request = client
-        .put(tab_data.url)
-        .header(reqwest::header::USER_AGENT, "TestApi/1.0")
-        .send()
-        .await
-        .unwrap();
+    let url = reqwest::Url::parse(tab_data.url.as_str()).unwrap();
+    let response: RequestResponse = send_request(Method::PUT, url).await;
 
-    debug!("PUT response: {:?}", request);
-    let headers = request.headers().clone();
-    let status = request.status().clone();
-    let body = request.text().await.unwrap();
-
-    RequestResponse {
-        body,
-        headers,
-        status,
-    }
+    return response;
 }
 
 #[tauri::command]
 async fn send_delete_request(tab_data: Tabdata) -> RequestResponse {
     info!("Run DELETE request {:?}", tab_data);
+    let url = reqwest::Url::parse(tab_data.url.as_str()).unwrap();
+    let response: RequestResponse = send_request(Method::DELETE, url).await;
+
+    return response;
+}
+
+async fn send_request(method: Method, url: reqwest::Url) -> RequestResponse {
     let client = reqwest::Client::new();
-    let request = client
-        .delete(tab_data.url)
-        .header(reqwest::header::USER_AGENT, "TestApi/1.0")
+    let request: RequestResponse = match client
+        .request(method.clone(), url)
+        .header(reqwest::header::USER_AGENT, "TestAoi/1.0")
         .send()
         .await
-        .unwrap();
+    {
+        Ok(request) => {
+            debug!("{:?} response: {:?}", method, request);
+            let headers = request.headers().clone();
+            let status = Some(request.status().clone());
+            let body = request.text().await.unwrap();
 
-    debug!("DELETE response: {:?}", request);
-    let headers = request.headers().clone();
-    let status = request.status().clone();
-    let body = request.text().await.unwrap();
+            RequestResponse {
+                body,
+                headers,
+                status,
+            }
+        }
+        Err(_) => {
+            let body = String::from("Error sending request");
+            let headers = HeaderMap::new();
+            let status = None;
 
-    RequestResponse {
-        body,
-        headers,
-        status,
-    }
+            RequestResponse {
+                body,
+                headers,
+                status,
+            }
+        }
+    };
+
+    return request;
 }
 
 // Get the config from db
@@ -276,7 +244,9 @@ fn save_session(session_data: String, config: tauri::State<ConfigState>) {
                     diesel::update(requesttabs.filter(uuid.eq(&full_tab_data.uuid)))
                         .set((
                             tabdata.eq(serde_json::to_string(&full_tab_data.data.clone()).unwrap()),
-                            tabdata_saved.eq(serde_json::to_string(&full_tab_data.saved_data.clone()).unwrap()),
+                            tabdata_saved
+                                .eq(serde_json::to_string(&full_tab_data.saved_data.clone())
+                                    .unwrap()),
                         ))
                         .execute(conn);
 
@@ -412,7 +382,8 @@ fn init_session(config: tauri::State<ConfigState>) -> Vec<FullTabdata> {
                 let request_tab = FullTabdata {
                     uuid: tab_data.uuid,
                     data: serde_json::from_str(tab_data.tabdata.as_str()).unwrap(),
-                    saved_data: serde_json::from_str(tab_data.tabdata_saved.unwrap().as_str()).unwrap()
+                    saved_data: serde_json::from_str(tab_data.tabdata_saved.unwrap().as_str())
+                        .unwrap(),
                 };
                 request_tabs.push(request_tab)
             }
