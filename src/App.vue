@@ -51,7 +51,7 @@ onMounted(() => {
     if (e.ctrlKey && e.key === 's') {
       e.preventDefault();
       // Set activetab's saved_data to what is the current data
-      requestStore.activeTab.saved_data = { ...requestStore.activeTab.data };
+      requestStore.activeTab.saved_data = JSON.parse(JSON.stringify(requestStore.activeTab.data))
       save_session();
     }
   });

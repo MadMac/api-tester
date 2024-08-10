@@ -30,5 +30,8 @@ export const requestStore = reactive({
   },
   setActiveTab(tab: RequestTab) {
     this.activeTab = tab
+  },
+  isTabSaved(tab: RequestTab) {
+    return JSON.stringify(tab.data) == JSON.stringify(tab.saved_data)
   }
 })

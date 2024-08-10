@@ -22,6 +22,7 @@ const props = defineProps({
     class="tab-container" show-arrows>
     <v-tab v-for="n in requestStore.tabs" :value="n">
       {{ n ? n.data.name.substring(0, 10) : "Error" }}{{ n && n.data.name.length > 10 ? "..." : "" }}
+      <v-icon class="save-tab-button" v-if="!requestStore.isTabSaved(n)">mdi-content-save-alert</v-icon>
       <v-btn icon class="close-tab-button" color="light-blue-darken-4" height="20" width="20"
         @click="props.remove_tab(n)">
         <v-icon size="x-small">mdi-close-circle</v-icon>
@@ -45,6 +46,13 @@ const props = defineProps({
   margin-left: auto;
   margin-right: 10px;
   max-width: 35px;
+}
+
+.save-tab-button {
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 10px;
+  margin-right: 0px;
 }
 
 .close-tab-button {
