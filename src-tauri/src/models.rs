@@ -1,11 +1,11 @@
-use diesel::prelude::*;
 use chrono::NaiveDateTime;
+use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::schema::config;
 use crate::schema::requesttabs;
-use crate::schema::sessions;
 use crate::schema::requesttabs_sessions;
+use crate::schema::sessions;
 
 #[derive(Debug, Clone, Selectable, Serialize, Deserialize, Queryable, Insertable)]
 #[diesel(table_name = config)]
@@ -22,7 +22,7 @@ pub struct RequestTabs {
     pub uuid: String,
     pub tabdata: String,
     pub tabdata_saved: Option<String>,
-    pub saved_timestamp: Option<NaiveDateTime>
+    pub saved_timestamp: Option<NaiveDateTime>,
 }
 
 #[derive(Debug, Clone, Selectable, Serialize, Deserialize, Queryable, Insertable)]

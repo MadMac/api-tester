@@ -33,9 +33,4 @@ diesel::table! {
 diesel::joinable!(requesttabs_sessions -> requesttabs (requesttabs_uuid));
 diesel::joinable!(requesttabs_sessions -> sessions (sessions_uuid));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    config,
-    requesttabs,
-    requesttabs_sessions,
-    sessions,
-);
+diesel::allow_tables_to_appear_in_same_query!(config, requesttabs, requesttabs_sessions, sessions,);

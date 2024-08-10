@@ -416,6 +416,7 @@ fn main() {
 
     info!("Starting Tauri backend.");
     tauri::Builder::default()
+        .plugin(tauri_plugin_shell::init())
         .manage(ConfigState(AppState {
             config: Mutex::new(config_data),
         }))
