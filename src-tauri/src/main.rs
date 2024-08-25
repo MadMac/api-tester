@@ -61,6 +61,8 @@ struct FullTabdata {
 struct Tabdata {
     name: String,
     url: String,
+    #[serde(rename = "requestType")]
+    request_type: String,
     response: Option<RequestResponseTest>,
     parameters: Vec<RequestParameter>,
 }

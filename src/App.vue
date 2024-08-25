@@ -2,24 +2,33 @@
 import { invoke } from '@tauri-apps/api/core'
 import { requestStore } from './store/requestStore.js'
 import { ref, onMounted, computed } from 'vue'
-import { RequestResponse, RequestTab } from './models/models'
+import { RequestResponse, RequestTab, RequestType } from './models/models'
 import { v4 as uuidv4 } from 'uuid';
 
 import SideBar from './components/SideBar.vue';
 import TabRow from './components/TabRow.vue';
 import ParameterTable from './components/ParameterTable.vue';
 
-const requestType = ref("GET");
 const additionalFeatures = ref();
+const methodList = [
+  RequestType.GET,
+  RequestType.POST,
+  RequestType.PUT,
+  RequestType.DELETE
+]
+
+const default_new_tab = {
+  name: "Untitled",
+  url: "",
+  response: undefined,
+  requestType: RequestType.GET,
+  parameters: []
+}
+
 
 const init_tabs = () => {
   console.log("Add tab")
-  const newTabData = {
-    name: "Untitled",
-    url: "",
-    response: undefined,
-    parameters: []
-  }
+  const newTabData = JSON.parse(JSON.stringify(default_new_tab));
 
   const newTab = {
     uuid: uuidv4(),
@@ -72,12 +81,7 @@ const save_session = () => {
 }
 
 const add_new_tab = () => {
-  const newTabData = {
-    name: "Untitled",
-    url: "",
-    response: undefined,
-    parameters: []
-  }
+  const newTabData = JSON.parse(JSON.stringify(default_new_tab));
 
   const newTab = {
     uuid: uuidv4(),
@@ -109,9 +113,8 @@ const send_request = () => {
   // Response data should be empty when sending tab data to the backend
   const tab_data = requestStore.activeTab.data
   tab_data.response = undefined;
-
-  switch (requestType.value) {
-    case "GET":
+  switch (requestStore.activeTab.data.requestType) {
+    case RequestType.GET:
       invoke('send_get_request', { tabData: tab_data })
         .then((response) => {
           let requestResponse = response as RequestResponse;
@@ -119,7 +122,7 @@ const send_request = () => {
           console.log(requestResponse)
         });
       break;
-    case "POST":
+    case RequestType.POST:
       invoke('send_post_request', { tabData: tab_data })
         .then((response) => {
           let requestResponse = response as RequestResponse;
@@ -127,7 +130,7 @@ const send_request = () => {
           console.log(response)
         });
       break;
-    case "PUT":
+    case RequestType.PUT:
       invoke('send_put_request', { tabData: tab_data })
         .then((response) => {
           let requestResponse = response as RequestResponse;
@@ -135,7 +138,7 @@ const send_request = () => {
           console.log(response)
         });
       break;
-    case "DELETE":
+    case RequestType.DELETE:
       invoke('send_delete_request', { tabData: tab_data })
         .then((response) => {
           let requestResponse = response as RequestResponse;
@@ -144,7 +147,7 @@ const send_request = () => {
         });
       break;
     default:
-      console.error("Invalid requestType: " + requestType.value);
+      console.error("Invalid requestType: " + requestStore.activeTab.data.requestType);
   }
 
 }
@@ -182,6 +185,19 @@ const activeTabUrl = computed({
   }
 })
 
+const activeTabRequestType = computed({
+  get() {
+    console.log(requestStore.activeTab)
+    if (requestStore.activeTab && requestStore.activeTab.data) {
+      return requestStore.activeTab.data.requestType;
+    }
+    return RequestType.GET
+  },
+  set(newValue: RequestType) {
+    requestStore.activeTab.data.requestType = newValue;
+  }
+})
+
 </script>
 
 <template>
@@ -196,8 +212,8 @@ const activeTabUrl = computed({
           <v-text-field label="Name" class="input-col" v-model="activeTabName" hide-details="auto"></v-text-field>
         </div>
         <div class="flex-row">
-          <v-select label="Method" :items="['GET', 'POST', 'PUT', 'DELETE']" class="select-col"
-            v-model="requestType"></v-select>
+          <v-select label="Method" :items="methodList" class="select-col"
+            v-model="activeTabRequestType"></v-select>
           <v-text-field label="Url" class="input-col" v-model="activeTabUrl"></v-text-field>
           <v-btn block class="button-col" size="x-large" color="light-blue-darken-1" @click="send_request()">
             SEND

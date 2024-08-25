@@ -20,6 +20,14 @@ export interface RequestParameter {
 export interface Tabdata {
 	name: string;
 	url: string;
+	requestType: RequestType;
 	response: RequestResponse | undefined;
 	parameters: RequestParameter[];
 }
+
+export enum RequestType {
+	GET = "GET",
+	POST = "POST",
+	PUT = "PUT", 
+	DELETE = "DELETE"
+} 
