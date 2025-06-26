@@ -1,0 +1,43 @@
+[
+  {
+    "label": "Debug Tauri App (Development)",
+    "build": {
+      "command": "cargo",
+      "args": [
+        "build",
+        "--manifest-path=./src-tauri/Cargo.toml",
+        "--no-default-features"
+      ]
+    },
+    "program": "$ZED_WORKTREE_ROOT/src-tauri/target/debug/fantastic-lamp",
+    "request": "launch",
+    "adapter": "CodeLLDB",
+    "env": {
+      "RUST_LOG": "debug",
+      "RUST_BACKTRACE": "1"
+    },
+    "cwd": "$ZED_WORKTREE_ROOT"
+  },
+  {
+    "label": "Debug Tauri App (Production)",
+    "build": {
+      "command": "cargo",
+      "args": ["build", "--release", "--manifest-path=./src-tauri/Cargo.toml"]
+    },
+    "program": "$ZED_WORKTREE_ROOT/src-tauri/target/release/fantastic-lamp",
+    "request": "launch",
+    "adapter": "CodeLLDB",
+    "env": {
+      "RUST_LOG": "info",
+      "RUST_BACKTRACE": "1"
+    },
+    "cwd": "$ZED_WORKTREE_ROOT"
+  },
+  {
+    "label": "Attach to Running Tauri Process",
+    "request": "attach",
+    "adapter": "CodeLLDB",
+    "pid": "${command:pickProcess}",
+    "stopOnEntry": false
+  }
+]

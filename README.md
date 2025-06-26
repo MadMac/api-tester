@@ -14,3 +14,9 @@ A small program that can send GET, POST, PUT, DELETE requests to addresses with 
 - The API test server starts in port 8080
 
 ![Screenshot of API Tester](Screenshot.png "API-Tester")
+
+
+## Debugging in Zed editor
+
+- Run task "Start frontend dev server"
+- Run Debug Tauri App (Development)
