@@ -11,22 +11,22 @@
   },
   "dependencies": {
     "@mdi/font": "^7.3.67",
-    "@tauri-apps/api": "^2.0.2",
-    "@tauri-apps/plugin-shell": "^2.0.0",
+    "@tauri-apps/api": "^2.6.0",
+    "@tauri-apps/plugin-shell": "^2.3.0",
     "uuid": "^9.0",
-    "vue": "^3.4.19",
-    "vuetify": "^3.6.13"
+    "vue": "^3.5.17",
+    "vuetify": "^3.8.11"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.6",
-    "@tauri-apps/cli": "^2.0.3",
+    "@tauri-apps/cli": "^2.6.1",
     "@types/uuid": "^9.0.7",
-    "@vitejs/plugin-vue": "^5.0.4",
+    "@vitejs/plugin-vue": "^6.0.0",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.5",
     "typescript": "^5.3.3",
-    "vite": "^5.4.2",
-    "vue-tsc": "^2.0.29"
+    "vite": "^7.0.0",
+    "vue-tsc": "^2.2.10"
   }
 }
