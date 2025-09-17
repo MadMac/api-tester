@@ -8,8 +8,15 @@ import { v4 as uuidv4 } from 'uuid';
 import SideBar from './components/SideBar.vue';
 import TabRow from './components/TabRow.vue';
 import ParameterTable from './components/ParameterTable.vue';
+import DarkModeToggle from './components/DarkModeToggle.vue';
 
-const additionalFeatures = ref();
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+
+const additionalFeatures = ref('parameters');
 const methodList = [
   RequestType.GET,
   RequestType.POST,
@@ -202,61 +209,90 @@ const activeTabRequestType = computed({
 
 <template>
   <div class="container">
+    <div class="header-bar">
+      <div class="flex items-center gap-2">
+        <DarkModeToggle />
+      </div>
+    </div>
     <SideBar />
-    <v-card class="card-container" color="light-blue" variant="tonal">
-      <div class="flex-container flex-row">
-        <TabRow :tab_changed="tab_changed" :remove_tab="remove_tab" :add_new_tab="add_new_tab" />
-      </div>
-      <div class="flex-container">
-        <div class="flex-row">
-          <v-text-field label="Name" class="input-col" v-model="activeTabName" hide-details="auto"></v-text-field>
+    <Card class="card-container">
+      <CardContent class="p-0">
+        <div class="flex-container">
+          <div class="flex-container flex-row">
+            <TabRow :tab_changed="tab_changed" :remove_tab="remove_tab" :add_new_tab="add_new_tab" />
+          </div>
+          <div class="flex-container">
+            <div class="flex-row">
+              <Input
+                placeholder="Name"
+                class="input-col"
+                v-model="activeTabName"
+              />
+            </div>
+            <div class="flex-row">
+              <Select :model-value="activeTabRequestType" @update:model-value="(value) => activeTabRequestType = value as RequestType">
+                <SelectTrigger class="select-col">
+                  <SelectValue placeholder="Method" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem v-for="method in methodList" :key="method" :value="method">
+                    {{ method }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <Input
+                placeholder="URL"
+                class="input-col"
+                v-model="activeTabUrl"
+              />
+              <Button
+                class="button-col"
+                size="lg"
+                @click="send_request()"
+              >
+                SEND
+              </Button>
+            </div>
+            <div class="flex-row-grow">
+              <Tabs :model-value="additionalFeatures" @update:model-value="(value) => additionalFeatures = value as string" class="w-full">
+                <TabsList class="tab-bottom-margin">
+                  <TabsTrigger value="headers">
+                    Headers
+                  </TabsTrigger>
+                  <TabsTrigger value="parameters">
+                    Parameters
+                  </TabsTrigger>
+                  <TabsTrigger value="body">
+                    Body
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="headers">
+                  Headers
+                </TabsContent>
+                <TabsContent value="parameters">
+                  <ParameterTable />
+                </TabsContent>
+                <TabsContent value="body">
+                  Body
+                </TabsContent>
+              </Tabs>
+            </div>
+            <div class="result-container">
+              <Card class="result-card">
+                <CardHeader class="pb-2">
+                  <p class="text-sm text-muted-foreground text-right">
+                    {{ status_text_handling() }}
+                  </p>
+                </CardHeader>
+                <CardContent class="result-box">
+                  <pre class="whitespace-pre-wrap font-mono text-sm">{{ requestStore.activeTab && requestStore.activeTab.data.response && response_handler(requestStore.activeTab.data.response.body) }}</pre>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
-        <div class="flex-row">
-          <v-select label="Method" :items="methodList" class="select-col"
-            v-model="activeTabRequestType"></v-select>
-          <v-text-field label="Url" class="input-col" v-model="activeTabUrl"></v-text-field>
-          <v-btn block class="button-col" size="x-large" color="light-blue-darken-1" @click="send_request()">
-            SEND
-          </v-btn>
-        </div>
-        <div class="flex-row-grow">
-          <v-tabs align-tabs="center" color="white" height="60" slider-color="#2196F3" v-model="additionalFeatures"
-            class="tab-bottom-margin">
-            <v-tab value="headers">
-              Headers
-            </v-tab>
-            <v-tab value="parameters">
-              Parameters
-            </v-tab>
-            <v-tab value="body">
-              Body
-            </v-tab>
-          </v-tabs>
-          <v-tabs-window v-model="additionalFeatures">
-            <v-tabs-window-item value="headers">
-              Headers
-            </v-tabs-window-item>
-            <v-tabs-window-item value="parameters">
-              <ParameterTable />
-            </v-tabs-window-item>
-            <v-tabs-window-item value="body">
-              Body
-            </v-tabs-window-item>
-          </v-tabs-window>
-        </div>
-        <div class="result-container">
-          <v-card class="result-card">
-            <v-card-subtitle>
-              {{ status_text_handling() }}
-            </v-card-subtitle>
-            <v-card-text class="result-box" scrollable>
-              {{ requestStore.activeTab && requestStore.activeTab.data.response &&
-          response_handler(requestStore.activeTab.data.response.body) }}
-            </v-card-text>
-          </v-card>
-        </div>
-      </div>
-    </v-card>
+      </CardContent>
+    </Card>
   </div>
 </template>
 
@@ -266,10 +302,21 @@ const activeTabRequestType = computed({
   margin-right: 20px;
 }
 
+.header-bar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 50;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+}
+
 .container {
   width: 100%;
   height: 100%;
   padding: 10px;
+  padding-top: 50px;
   display: flex;
   box-sizing: border-box;
   flex-direction: row;
@@ -281,7 +328,7 @@ const activeTabRequestType = computed({
   flex-grow: 1;
   margin-left: 10px;
   box-sizing: border-box;
-  justify-content: space-evenly;
+  background-color: hsl(var(--primary) / 0.1);
 }
 
 .flex-container {
@@ -289,7 +336,8 @@ const activeTabRequestType = computed({
   flex-direction: column;
   height: 100%;
   margin-top: 10px;
-  justify-content: space-evenly;
+  justify-content: flex-start;
+  padding: 10px;
 }
 
 .flex-row {
@@ -298,6 +346,7 @@ const activeTabRequestType = computed({
   margin: 10px;
   flex-grow: 1;
   max-height: 50px;
+  gap: 10px;
 }
 
 .flex-row-grow {
@@ -310,15 +359,11 @@ const activeTabRequestType = computed({
 .select-col {
   flex-grow: 0;
   flex-basis: 8%;
-  margin-left: 10px;
-  margin-right: 10px;
   min-width: 120px;
 }
 
 .input-col {
   flex-grow: 1;
-  margin-left: 10px;
-  margin-right: 10px;
 }
 
 .result-container {
@@ -335,19 +380,13 @@ const activeTabRequestType = computed({
   box-sizing: border-box;
   margin-left: 10px;
   margin-right: 10px;
-  white-space: pre;
-  font-family: monospace;
 }
 
 .result-box {
   box-sizing: border-box;
-  overflow-y: scroll;
+  overflow-y: auto;
   height: 100%;
-}
-
-.v-card-subtitle {
-  text-align: right;
-  margin: 10px;
+  max-height: 300px;
 }
 
 .tab-bottom-margin {

@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { requestStore } from '../store/requestStore.js'
+import { Button } from '@/components/ui/button'
+import { Plus, X, AlertCircle } from 'lucide-vue-next'
+
+
 const props = defineProps({
   tab_changed: {
     type: Function,
@@ -15,23 +19,54 @@ const props = defineProps({
   }
 })
 
+const handleTabClick = (tab: any) => {
+  requestStore.setActiveTab(tab)
+  props.tab_changed()
+}
+
+const isActiveTab = (tab: any) => {
+  return requestStore.activeTab?.uuid === tab.uuid
+}
+
 </script>
 
 <template>
-  <v-tabs bg-color="light-blue-darken-4" @click="props.tab_changed()" v-model="requestStore.activeTab"
-    class="tab-container" show-arrows>
-    <v-tab v-for="n in requestStore.tabs" :value="n">
-      {{ n ? n.data.name.substring(0, 10) : "Error" }}{{ n && n.data.name.length > 10 ? "..." : "" }}
-      <v-icon class="save-tab-button" v-if="!requestStore.isTabSaved(n)">mdi-content-save-alert</v-icon>
-      <v-btn icon class="close-tab-button" color="light-blue-darken-4" height="20" width="20"
-        @click="props.remove_tab(n)">
-        <v-icon size="x-small">mdi-close-circle</v-icon>
-      </v-btn>
-    </v-tab>
-  </v-tabs>
-  <v-btn icon class="new-tab-button" color="light-blue-darken-1" height="35" width="35" @click="add_new_tab()">
-    <v-icon>mdi-plus-circle-outline</v-icon>
-  </v-btn>
+  <div class="flex items-center w-full">
+    <div class="flex bg-muted p-1 rounded-md tab-container">
+      <button
+        v-for="n in requestStore.tabs"
+        :key="n.uuid"
+        @click="handleTabClick(n)"
+        :class="[
+          'relative group h-8 px-3 rounded-sm transition-colors flex items-center gap-1',
+          isActiveTab(n)
+            ? 'bg-background text-foreground shadow-sm'
+            : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+        ]"
+      >
+        <span class="truncate max-w-20 text-sm">
+          {{ n ? n.data.name.substring(0, 10) : "Error" }}{{ n && n.data.name.length > 10 ? "..." : "" }}
+        </span>
+        <AlertCircle v-if="!requestStore.isTabSaved(n)" class="h-3 w-3 text-orange-500" />
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-4 w-4 opacity-0 group-hover:opacity-100 hover:bg-destructive/20"
+          @click.stop="props.remove_tab(n)"
+        >
+          <X class="h-3 w-3" />
+        </Button>
+      </button>
+    </div>
+    <Button
+      variant="outline"
+      size="icon"
+      class="new-tab-button h-8 w-8 ml-2"
+      @click="add_new_tab()"
+    >
+      <Plus class="h-4 w-4" />
+    </Button>
+  </div>
 </template>
 
 <style scoped>
@@ -46,24 +81,5 @@ const props = defineProps({
   margin-left: auto;
   margin-right: 10px;
   max-width: 35px;
-}
-
-.save-tab-button {
-  margin-top: auto;
-  margin-bottom: auto;
-  margin-left: 10px;
-  margin-right: 0px;
-}
-
-.close-tab-button {
-  margin-top: auto;
-  margin-bottom: auto;
-  margin-left: 10px;
-  margin-right: 0px;
-  opacity: 0;
-}
-
-.close-tab-button:hover {
-  opacity: 1;
 }
 </style>

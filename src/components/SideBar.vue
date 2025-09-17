@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { Card, CardContent } from '@/components/ui/card'
 </script>
 
 <template>
-	<v-card class="side-container" color="light-blue" variant="tonal">
-      <div class="flex-container flex-row">Test</div>
-    </v-card>
+	<Card class="side-container">
+      <CardContent class="flex-container flex-row p-4">
+        Test
+      </CardContent>
+    </Card>
 </template>
 
 <style scoped>
@@ -30,5 +33,6 @@
   resize: horizontal;
   width: 300px;
   max-width: 600px;
+  background-color: hsl(var(--primary) / 0.1);
 }
 </style>
