@@ -1,17 +1,14 @@
 <script setup lang="ts">
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from "@/components/ui/card";
 </script>
 
 <template>
-	<Card class="side-container">
-      <CardContent class="flex-container flex-row p-4">
-        Test
-      </CardContent>
-    </Card>
+  <Card class="side-container">
+    <CardContent class="flex-container flex-row p-4"> Test </CardContent>
+  </Card>
 </template>
 
 <style scoped>
-
 .flex-container {
   display: flex;
   flex-direction: column;

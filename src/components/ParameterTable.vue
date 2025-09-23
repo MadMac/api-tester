@@ -1,27 +1,33 @@
 <script setup lang="ts">
-import { requestStore } from '../store/requestStore.js'
-import { RequestParameter } from '../models/models'
-import { v4 as uuidv4 } from 'uuid';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { X, Plus } from 'lucide-vue-next'
+import { requestStore } from "../store/requestStore.js";
+import { RequestParameter } from "../models/models";
+import { v4 as uuidv4 } from "uuid";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { X, Plus } from "lucide-vue-next";
 
 const add_parameter = () => {
   const new_parameter: RequestParameter = {
     uuid: uuidv4(),
     enabled: true,
     key: "",
-    value: ""
-  }
+    value: "",
+  };
   requestStore.activeTab.data.parameters.push(new_parameter);
-}
+};
 
 const remove_parameter = (remove_parameter: RequestParameter) => {
   requestStore.removeParameter(requestStore.activeTab, remove_parameter);
-}
-
+};
 </script>
 
 <template>
@@ -35,7 +41,11 @@ const remove_parameter = (remove_parameter: RequestParameter) => {
       </TableRow>
     </TableHeader>
     <TableBody>
-      <TableRow v-if="requestStore.activeTab" v-for="n in requestStore.activeTab.data.parameters" :key="n.uuid">
+      <TableRow
+        v-if="requestStore.activeTab"
+        v-for="n in requestStore.activeTab.data.parameters"
+        :key="n.uuid"
+      >
         <TableCell>
           <Checkbox v-model:checked="n.enabled" />
         </TableCell>
