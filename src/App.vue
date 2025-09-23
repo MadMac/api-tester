@@ -222,7 +222,7 @@ const activeTabRequestType = computed({
       </div>
     </div>
     <SideBar />
-    <Card class="card-container">
+    <Card class="card-container p-0">
       <CardContent class="p-0">
         <div class="flex-container">
           <div class="flex-container flex-row">
@@ -277,7 +277,7 @@ const activeTabRequestType = computed({
                 "
                 class="w-full"
               >
-                <TabsList class="tab-bottom-margin">
+                <TabsList>
                   <TabsTrigger value="headers"> Headers </TabsTrigger>
                   <TabsTrigger value="parameters"> Parameters </TabsTrigger>
                   <TabsTrigger value="body"> Body </TabsTrigger>
@@ -357,9 +357,8 @@ const activeTabRequestType = computed({
   display: flex;
   flex-direction: column;
   height: 100%;
-  margin-top: 10px;
   justify-content: flex-start;
-  padding: 10px;
+  padding: 5px;
   min-height: 0;
   overflow: hidden;
 }
@@ -421,9 +420,5 @@ const activeTabRequestType = computed({
   overflow-y: auto;
   height: 100%;
   flex-grow: 1;
-}
-
-.tab-bottom-margin {
-  margin-bottom: 20px;
 }
 </style>
