@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { requestStore } from "../store/requestStore.js";
 import { Button } from "@/components/ui/button";
-import { Plus, X, AlertCircle } from "lucide-vue-next";
+import { Plus, X, SaveIcon } from "lucide-vue-next";
 
 const props = defineProps({
   tab_changed: {
@@ -37,7 +37,7 @@ const isActiveTab = (tab: any) => {
           :key="n.uuid"
           @click="handleTabClick(n)"
           :class="[
-            'relative group h-8 px-3 rounded-sm transition-colors flex items-center gap-1 tab-button',
+            'relative group h-8 px-3 mx-1 rounded-sm transition-colors flex items-center gap-1 tab-button',
             isActiveTab(n)
               ? 'bg-background text-foreground shadow-sm'
               : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
@@ -47,7 +47,7 @@ const isActiveTab = (tab: any) => {
             {{ n ? n.data.name.substring(0, 10) : "Error"
             }}{{ n && n.data.name.length > 10 ? "..." : "" }}
           </span>
-          <AlertCircle
+          <SaveIcon
             v-if="!requestStore.isTabSaved(n)"
             class="h-3 w-3 text-orange-500"
           />

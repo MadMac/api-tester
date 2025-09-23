@@ -223,7 +223,7 @@ const activeTabRequestType = computed({
     </div>
     <SideBar />
     <Card class="card-container p-0">
-      <CardContent class="p-0">
+      <CardContent class="p-0 card-content">
         <div class="flex-container">
           <div class="flex-container flex-row">
             <TabRow
@@ -290,8 +290,8 @@ const activeTabRequestType = computed({
               </Tabs>
             </div>
             <div class="result-container">
-              <Card class="result-card">
-                <CardHeader class="pb-2">
+              <Card class="result-card py-3 gap-0">
+                <CardHeader>
                   <p class="text-sm text-muted-foreground text-right">
                     {{ status_text_handling() }}
                   </p>
@@ -349,18 +349,21 @@ const activeTabRequestType = computed({
   box-sizing: border-box;
   background-color: hsl(var(--primary) / 0.1);
   min-width: 0;
-  min-height: 0;
-  overflow: hidden;
+  max-width: 100vw;
+  max-height: 100vh;
+  overflow: auto;
 }
 
 .flex-container {
   display: flex;
   flex-direction: column;
+  flex-grow: 1;
+  min-height: 0;
   height: 100%;
   justify-content: flex-start;
   padding: 5px;
-  min-height: 0;
-  overflow: hidden;
+  overflow: auto;
+  max-height: 100%;
 }
 
 .flex-row {
@@ -397,11 +400,14 @@ const activeTabRequestType = computed({
 .result-container {
   margin: 10px;
   flex-grow: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   box-sizing: border-box;
   margin-left: 10px;
   margin-right: 10px;
-  min-height: 0;
-  overflow: hidden;
+  max-height: 100%;
+  overflow: auto;
 }
 
 .result-card {
@@ -412,7 +418,7 @@ const activeTabRequestType = computed({
   margin-right: 10px;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  max-height: 100%;
 }
 
 .result-box {
@@ -420,5 +426,18 @@ const activeTabRequestType = computed({
   overflow-y: auto;
   height: 100%;
   flex-grow: 1;
+  max-height: 100%;
 }
+
+.card-content {
+  flex-grow: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+}
+
+
 </style>
