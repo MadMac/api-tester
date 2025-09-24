@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { requestStore } from "../store/requestStore.js";
-import { RequestParameter } from "../models/models";
+import { RequestHeader } from "../models/models";
 import { v4 as uuidv4 } from "uuid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,18 +15,18 @@ import {
 } from "@/components/ui/table";
 import { X, Plus } from "lucide-vue-next";
 
-const add_parameter = () => {
-  const new_parameter: RequestParameter = {
+const add_header = () => {
+  const new_header: RequestHeader = {
     uuid: uuidv4(),
     enabled: true,
     key: "",
     value: "",
   };
-  requestStore.activeTab.data.parameters.push(new_parameter);
+  requestStore.activeTab.data.headers.push(new_header);
 };
 
-const remove_parameter = (remove_parameter: RequestParameter) => {
-  requestStore.removeParameter(requestStore.activeTab, remove_parameter);
+const remove_header = (remove_header: RequestHeader) => {
+  requestStore.removeHeader(requestStore.activeTab, remove_header);
 };
 </script>
 
@@ -43,7 +43,7 @@ const remove_parameter = (remove_parameter: RequestParameter) => {
     <TableBody>
       <TableRow
         v-if="requestStore.activeTab"
-        v-for="n in requestStore.activeTab.data.parameters"
+        v-for="n in requestStore.activeTab.data.headers"
         :key="n.uuid"
       >
         <TableCell>
@@ -54,15 +54,15 @@ const remove_parameter = (remove_parameter: RequestParameter) => {
         </TableCell>
         <TableCell>
           <Input
-            placeholder="Parameter"
-            class="parameter-field border-0 h-8 focus-visible:ring-0 focus-visible:ring-offset-0"
+            placeholder="Header"
+            class="header-field border-0 h-8 focus-visible:ring-0 focus-visible:ring-offset-0"
             v-model="n.key"
           />
         </TableCell>
         <TableCell>
           <Input
             placeholder="Value"
-            class="parameter-field border-0 h-8 focus-visible:ring-0 focus-visible:ring-offset-0"
+            class="header-field border-0 h-8 focus-visible:ring-0 focus-visible:ring-offset-0"
             v-model="n.value"
           />
         </TableCell>
@@ -71,17 +71,17 @@ const remove_parameter = (remove_parameter: RequestParameter) => {
             variant="ghost"
             size="icon"
             class="h-5 w-5"
-            @click="remove_parameter(n)"
+            @click="remove_header(n)"
           >
             <X class="h-3 w-3" />
           </Button>
         </TableCell>
       </TableRow>
       <TableRow>
-        <TableCell colspan="4" class="parameter-add-button">
-          <Button variant="ghost" @click="add_parameter()">
+        <TableCell colspan="4" class="header-add-button">
+          <Button variant="ghost" @click="add_header()">
             <Plus class="h-4 w-4 mr-2" />
-            Add Parameter
+            Add Header
           </Button>
         </TableCell>
       </TableRow>
@@ -90,7 +90,7 @@ const remove_parameter = (remove_parameter: RequestParameter) => {
 </template>
 
 <style scoped>
-.parameter-add-button {
+.header-add-button {
   width: 100%;
   text-align: center;
   padding-top: 5px !important;
@@ -101,7 +101,7 @@ const remove_parameter = (remove_parameter: RequestParameter) => {
   width: 3%;
 }
 
-.parameter-field {
+.header-field {
   background: transparent;
 }
 </style>

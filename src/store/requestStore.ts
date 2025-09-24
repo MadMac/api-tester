@@ -1,5 +1,5 @@
-import { reactive } from 'vue'
-import { RequestTab, RequestParameter } from '../models/models'
+import { reactive } from "vue";
+import { RequestTab, RequestParameter, RequestHeader } from "../models/models";
 
 export const requestStore = reactive({
   activeTab: undefined as unknown as RequestTab,
@@ -7,7 +7,7 @@ export const requestStore = reactive({
   addNewTab(tab: RequestTab) {
     this.tabs.push(tab);
   },
-  removeTab(tab: RequestTab) {  
+  removeTab(tab: RequestTab) {
     const index = this.tabs.indexOf(tab);
     if (index !== -1) {
       this.tabs.splice(index, 1);
@@ -22,16 +22,25 @@ export const requestStore = reactive({
       }
     }
   },
+  removeHeader(tab: RequestTab, header: RequestHeader) {
+    const index = this.tabs.indexOf(tab);
+    if (index !== -1) {
+      const parIndex = this.tabs[index].data.headers.indexOf(header);
+      if (parIndex !== -1) {
+        this.tabs[index].data.headers.splice(parIndex, 1);
+      }
+    }
+  },
   isTabsEmpty() {
-    return this.tabs.length === 0
+    return this.tabs.length === 0;
   },
   clearTabs() {
     this.tabs = [];
   },
   setActiveTab(tab: RequestTab) {
-    this.activeTab = tab
+    this.activeTab = tab;
   },
   isTabSaved(tab: RequestTab) {
-    return JSON.stringify(tab.data) == JSON.stringify(tab.saved_data)
-  }
-})
+    return JSON.stringify(tab.data) == JSON.stringify(tab.saved_data);
+  },
+});

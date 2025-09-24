@@ -1,33 +1,41 @@
 export interface RequestResponse {
-	body: string;
-	headers: string;
-	status: string;
+  body: string;
+  headers: string;
+  status: string;
 }
 
 export interface RequestTab {
-	uuid: string;
-	data: Tabdata;
-	saved_data: Tabdata | undefined;
+  uuid: string;
+  data: Tabdata;
+  saved_data: Tabdata | undefined;
 }
 
 export interface RequestParameter {
-	uuid: string;
-	enabled: boolean;
-	key: string;
-	value: string;
+  uuid: string;
+  enabled: boolean;
+  key: string;
+  value: string;
+}
+
+export interface RequestHeader {
+  uuid: string;
+  enabled: boolean;
+  key: string;
+  value: string;
 }
 
 export interface Tabdata {
-	name: string;
-	url: string;
-	requestType: RequestType;
-	response: RequestResponse | undefined;
-	parameters: RequestParameter[];
+  name: string;
+  url: string;
+  requestType: RequestType;
+  response: RequestResponse | undefined;
+  parameters: RequestParameter[];
+  headers: RequestHeader[];
 }
 
 export enum RequestType {
-	GET = "GET",
-	POST = "POST",
-	PUT = "PUT", 
-	DELETE = "DELETE"
-} 
+  GET = "GET",
+  POST = "POST",
+  PUT = "PUT",
+  DELETE = "DELETE",
+}

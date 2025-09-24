@@ -34,6 +34,14 @@ pub struct RequestParameter {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct RequestHeader {
+    pub uuid: String,
+    pub enabled: bool,
+    pub key: String,
+    pub value: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct FullTabdata {
     pub uuid: String,
     pub data: Tabdata,
@@ -48,6 +56,7 @@ pub struct Tabdata {
     pub request_type: String,
     pub response: Option<RequestResponseTest>,
     pub parameters: Vec<RequestParameter>,
+    pub headers: Vec<RequestHeader>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]

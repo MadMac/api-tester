@@ -9,6 +9,7 @@ mod session_management;
 mod util;
 
 use std::collections::HashMap;
+use std::str::FromStr;
 
 use diesel::prelude::*;
 use log::error;
@@ -17,25 +18,20 @@ use models::Config;
 use reqwest::{header::HeaderMap, Method};
 use session_management::{init_session, save_session};
 use std::sync::Mutex;
-use util::{establish_connection, AppState, ConfigData, ConfigState, RequestResponse, Tabdata};
+use util::{
+    establish_connection, AppState, ConfigData, ConfigState, RequestHeader, RequestParameter,
+    RequestResponse, Tabdata,
+};
 use uuid::Uuid;
 
 #[tauri::command]
 async fn send_get_request(tab_data: Tabdata) -> RequestResponse {
     info!("Run GET request {:?}", tab_data);
+    let full_url = build_url_with_params(&tab_data.url, &tab_data.parameters);
 
-    // Add parameters to the URL
-    let mut params_map = HashMap::new();
-    for param in tab_data.parameters {
-        if param.enabled {
-            params_map.insert(param.key, param.value);
-        }
-    }
-    let url = reqwest::Url::parse_with_params(tab_data.url.as_str(), &params_map).unwrap();
+    let header_map = build_header_map(&tab_data.headers);
 
-    let mut header_map = reqwest::header::HeaderMap::new();
-
-    let response: RequestResponse = send_request(Method::GET, url, header_map).await;
+    let response: RequestResponse = send_request(Method::GET, full_url, header_map).await;
 
     return response;
 }
@@ -43,11 +39,11 @@ async fn send_get_request(tab_data: Tabdata) -> RequestResponse {
 #[tauri::command]
 async fn send_post_request(tab_data: Tabdata) -> RequestResponse {
     info!("Run POST request {:?}", tab_data);
-    let url = reqwest::Url::parse(tab_data.url.as_str()).unwrap();
+    let full_url = build_url_with_params(&tab_data.url, &tab_data.parameters);
 
     let mut header_map = reqwest::header::HeaderMap::new();
 
-    let response: RequestResponse = send_request(Method::POST, url, header_map).await;
+    let response: RequestResponse = send_request(Method::POST, full_url, header_map).await;
 
     return response;
 }
@@ -55,11 +51,11 @@ async fn send_post_request(tab_data: Tabdata) -> RequestResponse {
 #[tauri::command]
 async fn send_put_request(tab_data: Tabdata) -> RequestResponse {
     info!("Run PUT request {:?}", tab_data);
-    let url = reqwest::Url::parse(tab_data.url.as_str()).unwrap();
+    let full_url = build_url_with_params(&tab_data.url, &tab_data.parameters);
 
     let mut header_map = reqwest::header::HeaderMap::new();
 
-    let response: RequestResponse = send_request(Method::PUT, url, header_map).await;
+    let response: RequestResponse = send_request(Method::PUT, full_url, header_map).await;
 
     return response;
 }
@@ -67,13 +63,36 @@ async fn send_put_request(tab_data: Tabdata) -> RequestResponse {
 #[tauri::command]
 async fn send_delete_request(tab_data: Tabdata) -> RequestResponse {
     info!("Run DELETE request {:?}", tab_data);
-    let url = reqwest::Url::parse(tab_data.url.as_str()).unwrap();
+    let full_url = build_url_with_params(&tab_data.url, &tab_data.parameters);
 
     let mut header_map = reqwest::header::HeaderMap::new();
 
-    let response: RequestResponse = send_request(Method::DELETE, url, header_map).await;
+    let response: RequestResponse = send_request(Method::DELETE, full_url, header_map).await;
 
     return response;
+}
+
+fn build_url_with_params(url: &str, params: &Vec<RequestParameter>) -> reqwest::Url {
+    // Add parameters to the URL
+    let mut params_map = HashMap::new();
+    for param in params {
+        if param.enabled {
+            params_map.insert(&param.key, &param.value);
+        }
+    }
+    reqwest::Url::parse_with_params(url, &params_map).unwrap()
+}
+
+fn build_header_map(headers: &Vec<RequestHeader>) -> reqwest::header::HeaderMap {
+    let mut header_map = reqwest::header::HeaderMap::new();
+
+    for header in headers {
+        header_map.insert(
+            reqwest::header::HeaderName::from_str(header.key.clone().as_str()).unwrap(),
+            header.value.clone().parse().unwrap(),
+        );
+    }
+    header_map
 }
 
 async fn send_request(method: Method, url: reqwest::Url, headers: HeaderMap) -> RequestResponse {
