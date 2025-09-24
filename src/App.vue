@@ -8,7 +8,6 @@ import { v4 as uuidv4 } from "uuid";
 import SideBar from "./components/SideBar.vue";
 import TabRow from "./components/TabRow.vue";
 import ParameterTable from "./components/ParameterTable.vue";
-import DarkModeToggle from "./components/DarkModeToggle.vue";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -216,11 +215,6 @@ const activeTabRequestType = computed({
 
 <template>
   <div class="container">
-    <div class="header-bar">
-      <div class="flex items-center gap-2">
-        <DarkModeToggle />
-      </div>
-    </div>
     <SideBar />
     <Card class="card-container p-0">
       <CardContent class="p-0 card-content">
@@ -332,7 +326,6 @@ const activeTabRequestType = computed({
   width: 100vw;
   height: 100vh;
   padding: 10px;
-  padding-top: 50px;
   display: flex;
   box-sizing: border-box;
   flex-direction: row;
@@ -438,6 +431,4 @@ const activeTabRequestType = computed({
   padding: 0;
   overflow: hidden;
 }
-
-
 </style>

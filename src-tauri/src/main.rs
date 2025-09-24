@@ -33,7 +33,7 @@ async fn send_get_request(tab_data: Tabdata) -> RequestResponse {
     }
     let url = reqwest::Url::parse_with_params(tab_data.url.as_str(), &params_map).unwrap();
 
-    let mut header_map = reqwest::header::HeaderMap::new();
+    let header_map = reqwest::header::HeaderMap::new();
 
     let response: RequestResponse = send_request(Method::GET, url, header_map).await;
 
