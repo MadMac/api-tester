@@ -47,7 +47,10 @@ const remove_header = (remove_header: RequestHeader) => {
         :key="n.uuid"
       >
         <TableCell>
-          <Checkbox v-model:checked="n.enabled" />
+          <Checkbox
+            :model-value="n.enabled"
+            @update:model-value="(value) => (n.enabled = value as boolean)"
+          />
         </TableCell>
         <TableCell>
           <Input
