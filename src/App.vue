@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from "uuid";
 import SideBar from "./components/SideBar.vue";
 import TabRow from "./components/TabRow.vue";
 import ParameterTable from "./components/ParameterTable.vue";
+import HeadersTable from "./components/HeadersTable.vue";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,7 @@ const default_new_tab = {
   response: undefined,
   requestType: RequestType.GET,
   parameters: [],
+  headers: [],
 };
 
 const init_tabs = () => {
@@ -276,7 +278,9 @@ const activeTabRequestType = computed({
                   <TabsTrigger value="parameters"> Parameters </TabsTrigger>
                   <TabsTrigger value="body"> Body </TabsTrigger>
                 </TabsList>
-                <TabsContent value="headers"> Headers </TabsContent>
+                <TabsContent value="headers">
+                  <HeadersTable />
+                </TabsContent>
                 <TabsContent value="parameters">
                   <ParameterTable />
                 </TabsContent>
