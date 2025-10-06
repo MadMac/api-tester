@@ -52,4 +52,7 @@ export const requestStore = reactive({
 
     return JSON.stringify(currentData) == JSON.stringify(savedData);
   },
+  updateActiveTabBody(body: string) {
+    this.activeTab.data.body = body;
+  },
 });

@@ -31,6 +31,7 @@ export interface Tabdata {
   response: RequestResponse | undefined;
   parameters: RequestParameter[];
   headers: RequestHeader[];
+  body: string;
 }
 
 export enum RequestType {

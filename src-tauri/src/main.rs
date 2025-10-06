@@ -31,7 +31,8 @@ async fn send_get_request(tab_data: Tabdata) -> RequestResponse {
 
     let header_map = build_header_map(&tab_data.headers);
 
-    let response: RequestResponse = send_request(Method::GET, full_url, header_map).await;
+    let response: RequestResponse =
+        send_request(Method::GET, full_url, header_map, tab_data.body).await;
 
     return response;
 }
@@ -41,9 +42,10 @@ async fn send_post_request(tab_data: Tabdata) -> RequestResponse {
     info!("Run POST request {:?}", tab_data);
     let full_url = build_url_with_params(&tab_data.url, &tab_data.parameters);
 
-    let mut header_map = reqwest::header::HeaderMap::new();
+    let header_map = build_header_map(&tab_data.headers);
 
-    let response: RequestResponse = send_request(Method::POST, full_url, header_map).await;
+    let response: RequestResponse =
+        send_request(Method::POST, full_url, header_map, tab_data.body).await;
 
     return response;
 }
@@ -53,9 +55,10 @@ async fn send_put_request(tab_data: Tabdata) -> RequestResponse {
     info!("Run PUT request {:?}", tab_data);
     let full_url = build_url_with_params(&tab_data.url, &tab_data.parameters);
 
-    let mut header_map = reqwest::header::HeaderMap::new();
+    let header_map = build_header_map(&tab_data.headers);
 
-    let response: RequestResponse = send_request(Method::PUT, full_url, header_map).await;
+    let response: RequestResponse =
+        send_request(Method::PUT, full_url, header_map, tab_data.body).await;
 
     return response;
 }
@@ -65,9 +68,10 @@ async fn send_delete_request(tab_data: Tabdata) -> RequestResponse {
     info!("Run DELETE request {:?}", tab_data);
     let full_url = build_url_with_params(&tab_data.url, &tab_data.parameters);
 
-    let mut header_map = reqwest::header::HeaderMap::new();
+    let header_map = build_header_map(&tab_data.headers);
 
-    let response: RequestResponse = send_request(Method::DELETE, full_url, header_map).await;
+    let response: RequestResponse =
+        send_request(Method::DELETE, full_url, header_map, tab_data.body).await;
 
     return response;
 }
@@ -95,7 +99,12 @@ fn build_header_map(headers: &Vec<RequestHeader>) -> reqwest::header::HeaderMap 
     header_map
 }
 
-async fn send_request(method: Method, url: reqwest::Url, headers: HeaderMap) -> RequestResponse {
+async fn send_request(
+    method: Method,
+    url: reqwest::Url,
+    headers: HeaderMap,
+    body: String,
+) -> RequestResponse {
     let client = reqwest::Client::new();
 
     let mut header_map = reqwest::header::HeaderMap::new();
@@ -108,6 +117,7 @@ async fn send_request(method: Method, url: reqwest::Url, headers: HeaderMap) -> 
     let request: RequestResponse = match client
         .request(method.clone(), url)
         .headers(header_map)
+        .body(body)
         .send()
         .await
     {

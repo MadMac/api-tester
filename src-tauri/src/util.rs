@@ -57,6 +57,7 @@ pub struct Tabdata {
     pub response: Option<RequestResponseTest>,
     pub parameters: Vec<RequestParameter>,
     pub headers: Vec<RequestHeader>,
+    pub body: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]

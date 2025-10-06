@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 
 const additionalFeatures = ref("parameters");
 const methodList = [
@@ -37,6 +38,7 @@ const default_new_tab = {
   requestType: RequestType.GET,
   parameters: [],
   headers: [],
+  body: "",
 };
 
 const init_tabs = () => {
@@ -284,7 +286,15 @@ const activeTabRequestType = computed({
                 <TabsContent value="parameters">
                   <ParameterTable />
                 </TabsContent>
-                <TabsContent value="body"> Body </TabsContent>
+                <TabsContent value="body">
+                  <Textarea
+                    :model-value="requestStore.activeTab.data.body"
+                    @update:model-value="
+                      (value) =>
+                        requestStore.updateActiveTabBody(value as string)
+                    "
+                  />
+                </TabsContent>
               </Tabs>
             </div>
             <div class="result-container">
