@@ -41,6 +41,15 @@ export const requestStore = reactive({
     this.activeTab = tab;
   },
   isTabSaved(tab: RequestTab) {
-    return JSON.stringify(tab.data) == JSON.stringify(tab.saved_data);
+    // Compare the data to saved data, ignoring the response property
+    const currentData = { ...tab.data };
+    const savedData = tab.saved_data ? { ...tab.saved_data } : undefined;
+
+    delete currentData.response;
+    if (savedData) {
+      delete savedData.response;
+    }
+
+    return JSON.stringify(currentData) == JSON.stringify(savedData);
   },
 });
