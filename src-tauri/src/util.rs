@@ -1,6 +1,6 @@
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
-use reqwest::{header::HeaderMap, Method, StatusCode};
+use reqwest::{header::HeaderMap, StatusCode};
 use serde::Deserialize;
 use serde::Serialize;
 use serde_nested_with::serde_nested;
@@ -14,15 +14,6 @@ pub struct RequestResponse {
     pub headers: HeaderMap,
     #[serde_nested(sub = "StatusCode", serde(with = "http_serde::status_code"))]
     pub status: Option<StatusCode>,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct RequestResponseTest {
-    pub body: String,
-    #[serde(with = "http_serde::header_map")]
-    pub headers: HeaderMap,
-    #[serde(with = "http_serde::status_code")]
-    pub status: StatusCode,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -54,7 +45,7 @@ pub struct Tabdata {
     pub url: String,
     #[serde(rename = "requestType")]
     pub request_type: String,
-    pub response: Option<RequestResponseTest>,
+    pub response: Option<RequestResponse>,
     pub parameters: Vec<RequestParameter>,
     pub headers: Vec<RequestHeader>,
     pub body: String,
