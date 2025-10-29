@@ -91,10 +91,12 @@ fn build_header_map(headers: &Vec<RequestHeader>) -> reqwest::header::HeaderMap 
     let mut header_map = reqwest::header::HeaderMap::new();
 
     for header in headers {
-        header_map.insert(
-            reqwest::header::HeaderName::from_str(header.key.clone().as_str()).unwrap(),
-            header.value.clone().parse().unwrap(),
-        );
+        if header.enabled {
+            header_map.insert(
+                reqwest::header::HeaderName::from_str(header.key.clone().as_str()).unwrap(),
+                header.value.clone().parse().unwrap(),
+            );
+        }
     }
     header_map
 }
