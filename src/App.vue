@@ -9,6 +9,7 @@ import SideBar from "./components/SideBar.vue";
 import TabRow from "./components/TabRow.vue";
 import ParameterTable from "./components/ParameterTable.vue";
 import HeadersTable from "./components/HeadersTable.vue";
+import ResponseContainer from "./components/ResponseContainer.vue";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -115,14 +116,6 @@ const remove_tab = (remove_tab: RequestTab) => {
   save_session();
 };
 
-const response_handler = (response: string) => {
-  try {
-    return JSON.stringify(JSON.parse(response), null, 2);
-  } catch (e) {
-    return response;
-  }
-};
-
 const send_request = () => {
   if (!requestStore.activeTab.data.url) return;
   requestStore.activeTab.data.response = {} as RequestResponse;
@@ -164,17 +157,6 @@ const send_request = () => {
         "Invalid requestType: " + requestStore.activeTab.data.requestType,
       );
   }
-};
-
-const status_text_handling = () => {
-  if (
-    requestStore.activeTab &&
-    requestStore.activeTab.data.response &&
-    requestStore.activeTab.data.response.status != ""
-  ) {
-    return "Status: " + requestStore.activeTab.data.response.status;
-  }
-  return "";
 };
 
 const activeTabName = computed({
@@ -297,22 +279,7 @@ const activeTabRequestType = computed({
                 </TabsContent>
               </Tabs>
             </div>
-            <div class="result-container">
-              <Card class="result-card py-3 gap-0">
-                <CardHeader>
-                  <p class="text-sm text-muted-foreground text-right">
-                    {{ status_text_handling() }}
-                  </p>
-                </CardHeader>
-                <CardContent class="result-box">
-                  <pre class="whitespace-pre-wrap font-mono text-sm">{{
-                    requestStore.activeTab &&
-                    requestStore.activeTab.data.response &&
-                    response_handler(requestStore.activeTab.data.response.body)
-                  }}</pre>
-                </CardContent>
-              </Card>
-            </div>
+            <ResponseContainer />
           </div>
         </div>
       </CardContent>
@@ -402,38 +369,6 @@ const activeTabRequestType = computed({
 .input-col {
   flex-grow: 1;
   min-width: 0;
-}
-
-.result-container {
-  margin: 10px;
-  flex-grow: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  margin-left: 10px;
-  margin-right: 10px;
-  max-height: 100%;
-  overflow: auto;
-}
-
-.result-card {
-  flex-grow: 1;
-  height: 100%;
-  box-sizing: border-box;
-  margin-left: 10px;
-  margin-right: 10px;
-  display: flex;
-  flex-direction: column;
-  max-height: 100%;
-}
-
-.result-box {
-  box-sizing: border-box;
-  overflow-y: auto;
-  height: 100%;
-  flex-grow: 1;
-  max-height: 100%;
 }
 
 .card-content {
