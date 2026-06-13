@@ -1,4 +1,4 @@
-import { ref, onMounted, watch, readonly } from "vue";
+import { ref, watch, readonly } from "vue";
 
 const isDark = ref(false);
 

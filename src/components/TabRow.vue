@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { requestStore } from "../store/requestStore.js";
 import { Button } from "@/components/ui/button";
-import { Plus, X, SaveIcon } from "lucide-vue-next";
+import { Plus, X, SaveIcon } from "@lucide/vue";
 
 const props = defineProps({
   tab_changed: {

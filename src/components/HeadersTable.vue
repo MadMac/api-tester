@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { X, Plus } from "lucide-vue-next";
+import { X, Plus } from "@lucide/vue";
 
 const add_header = () => {
   const new_header: RequestHeader = {

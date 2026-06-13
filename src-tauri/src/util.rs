@@ -3,16 +3,56 @@ use diesel::sqlite::SqliteConnection;
 use reqwest::{header::HeaderMap, StatusCode};
 use serde::Deserialize;
 use serde::Serialize;
-use serde_nested_with::serde_nested;
 use std::sync::Mutex;
 
-#[serde_nested]
+// Custom serialization for Option<StatusCode>
+pub mod status_serializer {
+    use super::StatusCode;
+    use serde::{Deserialize, Deserializer, Serializer};
+    use serde_json::Value;
+    
+    pub fn serialize<S>(status: &Option<StatusCode>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match status {
+            Some(s) => serializer.collect_str(&s.as_str()),
+            None => serializer.serialize_none(),
+        }
+    }
+    
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<StatusCode>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        use serde::de::Error;
+        
+        // Try to deserialize as Value first to handle both string and integer
+        let value: Option<Value> = Option::deserialize(deserializer)?;
+        match value {
+            Some(Value::String(s)) => {
+                let code: u16 = s.parse().map_err(Error::custom)?;
+                Ok(Some(StatusCode::from_u16(code).map_err(Error::custom)?))
+            },
+            Some(Value::Number(n)) => {
+                if let Some(code) = n.as_u64() {
+                    Ok(Some(StatusCode::from_u16(code as u16).map_err(Error::custom)?))
+                } else {
+                    Err(Error::custom("Expected positive integer for status code"))
+                }
+            },
+            Some(other) => Err(Error::custom(format!("Expected string or number for status code, got {:?}", other))),
+            None => Ok(None),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RequestResponse {
     pub body: String,
     #[serde(with = "http_serde::header_map")]
     pub headers: HeaderMap,
-    #[serde_nested(sub = "StatusCode", serde(with = "http_serde::status_code"))]
+    #[serde(with = "status_serializer")]
     pub status: Option<StatusCode>,
 }
 

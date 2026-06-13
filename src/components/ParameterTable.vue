@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { X, Plus } from "lucide-vue-next";
+import { X, Plus } from "@lucide/vue";
 
 const add_parameter = () => {
   const new_parameter: RequestParameter = {
